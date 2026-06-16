@@ -1,0 +1,74 @@
+"""API contract + RBAC + unified-workflow integration tests."""
+
+from __future__ import annotations
+
+
+def test_health(client):
+    r = client.get("/health")
+    assert r.status_code == 200
+    body = r.json()
+    assert body["status"] == "ok"
+    assert set(body["providers"]) == {
+        "instrument", "anatomy", "phase", "risk", "copilot", "embedding"
+    }
+
+
+def test_rbac_enforced(client, viewer_token):
+    # anonymous write -> 401
+    assert client.post("/api/patients", json={"external_mrn": "x"}).status_code == 401
+    # viewer write -> 403
+    r = client.post(
+        "/api/patients",
+        json={"external_mrn": "x", "display_name": "x"},
+        headers={"Authorization": f"Bearer {viewer_token}"},
+    )
+    assert r.status_code == 403
+
+
+def test_procedure_linked_graph(client):
+    procs = client.get("/api/procedures").json()
+    assert len(procs) >= 2
+    detail = client.get(f"/api/procedures/{procs[0]['id']}").json()
+    assert detail["patient"]["id"] == detail["patient_id"]
+    assert len(detail["media"]) == 1
+    assert detail["outcome"] is not None
+
+
+def test_unified_analysis_connects_all_subsystems(client):
+    procs = client.get("/api/procedures").json()
+    pid = procs[0]["id"]
+    a = client.get(f"/api/procedures/{pid}/analysis").json()
+    assert a["status"] == "analyzed"
+    assert a["video_uri"]
+    assert len(a["phases"]) == 6           # procedure timeline
+    assert len(a["tracks"]) > 0            # tracking
+    assert a["detection_count"] > 0        # detection
+    assert a["skill"]["score"] > 0         # skill
+    assert len(a["risks"]) > 0             # risk
+    assert len(a["advisories"]) > 0        # copilot
+
+
+def test_twin_and_foundation(client):
+    procs = client.get("/api/procedures").json()
+    pid = procs[0]["id"]
+    twin = client.get(f"/api/procedures/{pid}/twin").json()
+    assert len(twin["structures"]) > 0
+    assert len(twin["expected_vs_actual"]) > 0
+
+    sim = client.get(f"/api/foundation/similar?procedure_id={pid}").json()
+    assert len(sim["results"]) > 0
+
+    ask = client.post("/api/foundation/ask", json={"question": "complications?"}).json()
+    assert ask["answer"]
+    assert "provider" in ask
+
+
+def test_reanalysis_is_idempotent(client, surgeon_token):
+    procs = client.get("/api/procedures").json()
+    pid = procs[0]["id"]
+    h = {"Authorization": f"Bearer {surgeon_token}"}
+    r1 = client.post(f"/api/procedures/{pid}/analyze", headers=h).json()
+    a = client.get(f"/api/procedures/{pid}/analysis").json()
+    # re-running does not duplicate phase segments (still exactly 6)
+    assert len(a["phases"]) == 6
+    assert r1["phases"] == 6
