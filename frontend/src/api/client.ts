@@ -131,6 +131,10 @@ export const api = {
   getAnalysis: (id: string) => req<UnifiedAnalysis>(`/procedures/${id}/analysis`),
   getVitals: (id: string) => req<VitalsResponse>(`/procedures/${id}/vitals`),
   getTwin: (id: string) => req<DigitalTwinT>(`/procedures/${id}/twin`),
+  getTwinVolume: (id: string) =>
+    req<{ depth: number; height: number; width: number; modality: string; data_b64: string }>(
+      `/procedures/${id}/twin/volume`
+    ),
   updateOutcome: (id: string, body: Record<string, unknown>) =>
     req<OutcomeT>(`/procedures/${id}/outcome`, { method: "PUT", body: JSON.stringify(body) }),
 

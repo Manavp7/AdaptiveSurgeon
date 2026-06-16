@@ -120,6 +120,9 @@ def test_twin_and_foundation(client):
     assert len(twin["structures"]) > 0
     assert len(twin["expected_vs_actual"]) > 0
 
+    vol = client.get(f"/api/procedures/{pid}/twin/volume").json()
+    assert vol["depth"] > 0 and vol["data_b64"]
+
     sim = client.get(f"/api/foundation/similar?procedure_id={pid}").json()
     assert len(sim["results"]) > 0
 

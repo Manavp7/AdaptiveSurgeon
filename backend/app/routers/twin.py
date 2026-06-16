@@ -11,8 +11,17 @@ from ..db import get_db
 from ..models import DigitalTwin, Procedure
 from ..schemas.twin import DigitalTwinOut
 from ..services import twin as twin_service
+from ..services import volume as volume_service
 
 router = APIRouter(prefix="/procedures", tags=["digital-twin"])
+
+
+@router.get("/{procedure_id}/twin/volume")
+def get_twin_volume(procedure_id: str, db: Annotated[Session, Depends(get_db)]) -> dict:
+    proc = db.get(Procedure, procedure_id)
+    if not proc:
+        raise HTTPException(status_code=404, detail="Procedure not found")
+    return volume_service.generate_volume(procedure_id)
 
 
 @router.get("/{procedure_id}/twin", response_model=DigitalTwinOut)

@@ -13,6 +13,7 @@ import VitalsPanel from "../components/VitalsPanel";
 import TrackAnalytics from "../components/TrackAnalytics";
 import OutcomeEditor from "../components/OutcomeEditor";
 import AnnotationsPanel from "../components/AnnotationsPanel";
+import CTSliceViewer from "../components/CTSliceViewer";
 import type {
   DigitalTwinT,
   ProcedureDetail as PD,
@@ -213,6 +214,10 @@ export default function ProcedureDetail() {
                 <span><span className="dot" style={{ background: "var(--safe)" }} />Safe</span>
                 <span><span className="dot" style={{ background: "var(--caution)" }} />Caution</span>
                 <span><span className="dot" style={{ background: "var(--critical)" }} />Critical</span>
+              </div>
+              <div style={{ marginTop: 12 }}>
+                <div className="muted small" style={{ marginBottom: 6 }}>Pre-op CT (axial slices)</div>
+                <CTSliceViewer procedureId={proc.id} />
               </div>
               <div style={{ marginTop: 10 }}>
                 <div className="muted small" style={{ marginBottom: 6 }}>Expected vs actual</div>
