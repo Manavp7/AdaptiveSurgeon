@@ -24,3 +24,4 @@ httpx==0.28.1
 # segment-anything       # SamSegmenter (AnatomySegmentationProvider)
 # sentence-transformers  # SentenceTransformerEmbedder (EmbeddingProvider)
 # psycopg2-binary        # PostgreSQL driver (DATABASE_URL=postgresql://...)
+# boto3                  # S3/MinIO object storage (ADAPTIVE_STORAGE_BACKEND=s3)

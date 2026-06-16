@@ -19,11 +19,11 @@ def get_store() -> ObjectStore:
     if _store is None:
         settings = get_settings()
         if settings.storage_backend == "s3":
-            # Future: from .s3 import S3ObjectStore; _store = S3ObjectStore(...)
-            raise NotImplementedError(
-                "S3/MinIO backend not enabled in this build; use storage_backend=local"
-            )
-        _store = LocalObjectStore(settings.storage_dir)
+            from .s3 import S3ObjectStore
+
+            _store = S3ObjectStore()
+        else:
+            _store = LocalObjectStore(settings.storage_dir)
     return _store
 
 
