@@ -24,6 +24,7 @@ export default function ProcedureDetail() {
   const [currentTime, setCurrentTime] = useState(0);
   const [showTracks, setShowTracks] = useState(true);
   const [busy, setBusy] = useState(false);
+  const [progress, setProgress] = useState("");
   const [err, setErr] = useState("");
 
   const load = useCallback(async () => {
@@ -56,12 +57,13 @@ export default function ProcedureDetail() {
     setBusy(true);
     setErr("");
     try {
-      await api.analyze(id);
+      await api.analyzeAndWait(id, (p, m) => setProgress(`${m} ${Math.round(p * 100)}%`));
       await load();
     } catch (e) {
       setErr(e instanceof ApiError ? e.message : String(e));
     } finally {
       setBusy(false);
+      setProgress("");
     }
   };
 
@@ -86,7 +88,7 @@ export default function ProcedureDetail() {
         </div>
         {canWrite(role) && (
           <button className="primary" onClick={runAnalysis} disabled={busy}>
-            {busy ? "Processing…" : hasAnalysis ? "Re-run analysis" : "Run analysis"}
+            {busy ? progress || "Processing…" : hasAnalysis ? "Re-run analysis" : "Run analysis"}
           </button>
         )}
       </div>

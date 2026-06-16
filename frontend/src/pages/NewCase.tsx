@@ -54,7 +54,7 @@ export default function NewCase() {
       await api.uploadMedia(proc.id, file, "video");
 
       setStep("Running full pipeline (detection → timeline → skill → risk → copilot → twin)…");
-      await api.analyze(proc.id);
+      await api.analyzeAndWait(proc.id, (p, m) => setStep(`${m} ${Math.round(p * 100)}%`));
 
       setStep("Done!");
       nav(`/procedures/${proc.id}`);

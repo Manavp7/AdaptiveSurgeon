@@ -67,8 +67,19 @@ def test_reanalysis_is_idempotent(client, surgeon_token):
     procs = client.get("/api/procedures").json()
     pid = procs[0]["id"]
     h = {"Authorization": f"Bearer {surgeon_token}"}
-    r1 = client.post(f"/api/procedures/{pid}/analyze", headers=h).json()
+    r1 = client.post(f"/api/procedures/{pid}/analyze?wait=true", headers=h).json()
     a = client.get(f"/api/procedures/{pid}/analysis").json()
     # re-running does not duplicate phase segments (still exactly 6)
     assert len(a["phases"]) == 6
     assert r1["phases"] == 6
+
+
+def test_analyze_async_job(client, surgeon_token):
+    procs = client.get("/api/procedures").json()
+    pid = procs[0]["id"]
+    h = {"Authorization": f"Bearer {surgeon_token}"}
+    r = client.post(f"/api/procedures/{pid}/analyze", headers=h).json()
+    assert "job_id" in r
+    job = client.get(f"/api/jobs/{r['job_id']}").json()
+    # background task runs inside TestClient request lifecycle -> done by now
+    assert job["status"] in ("running", "done", "queued")

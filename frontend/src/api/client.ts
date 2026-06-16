@@ -77,7 +77,23 @@ export const api = {
   },
 
   // analysis
-  analyze: (id: string) => req<Record<string, unknown>>(`/procedures/${id}/analyze`, { method: "POST" }),
+  analyze: (id: string) =>
+    req<{ job_id: string; status: string }>(`/procedures/${id}/analyze`, { method: "POST" }),
+  getJob: (jobId: string) =>
+    req<{ id: string; status: string; progress: number; message: string; error: string | null }>(
+      `/jobs/${jobId}`
+    ),
+  /** Run analysis and resolve when the background job finishes (polls progress). */
+  async analyzeAndWait(id: string, onProgress?: (p: number, msg: string) => void) {
+    const { job_id } = await this.analyze(id);
+    for (;;) {
+      const job = await this.getJob(job_id);
+      onProgress?.(job.progress, job.message);
+      if (job.status === "done") return job;
+      if (job.status === "error") throw new ApiError(500, job.error || "Analysis failed");
+      await new Promise((r) => setTimeout(r, 600));
+    }
+  },
   getAnalysis: (id: string) => req<UnifiedAnalysis>(`/procedures/${id}/analysis`),
   getTwin: (id: string) => req<DigitalTwinT>(`/procedures/${id}/twin`),
 

@@ -64,6 +64,7 @@ def _register_routers() -> None:
         analysis,
         auth,
         foundation,
+        jobs,
         media,
         patients,
         procedures,
@@ -76,6 +77,7 @@ def _register_routers() -> None:
     app.include_router(procedures.router, prefix=p)
     app.include_router(media.router, prefix=p)
     app.include_router(analysis.router, prefix=p)
+    app.include_router(jobs.router, prefix=p)
     app.include_router(twin.router, prefix=p)
     app.include_router(foundation.router, prefix=p)
 

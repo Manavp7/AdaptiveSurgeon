@@ -13,6 +13,7 @@ subsystem's output rather than living as an isolated demo.
 from __future__ import annotations
 
 import logging
+from collections.abc import Callable
 
 from sqlalchemy import delete
 from sqlalchemy.orm import Session
@@ -52,7 +53,15 @@ def _clear_prior_analysis(db: Session, proc: models.Procedure, media_ids: list[s
     db.flush()
 
 
-def run_analysis(db: Session, procedure_id: str) -> dict:
+def run_analysis(
+    db: Session,
+    procedure_id: str,
+    progress_cb: Callable[[float, str], None] | None = None,
+) -> dict:
+    def progress(p: float, msg: str) -> None:
+        if progress_cb:
+            progress_cb(p, msg)
+
     proc = db.get(models.Procedure, procedure_id)
     if proc is None:
         raise ValueError(f"Procedure not found: {procedure_id}")
@@ -63,12 +72,14 @@ def run_analysis(db: Session, procedure_id: str) -> dict:
 
     proc.status = "processing"
     db.flush()
+    progress(0.1, "Reading video")
 
     store = get_store()
     video_path = store.open_path(video.uri)
 
     detector = get_instrument_provider()
     va = video_intel.analyze_video(video_path, detector, settings.analysis_sample_fps)
+    progress(0.5, "Instruments detected")
 
     media_ids = [m.id for m in proc.media]
     _clear_prior_analysis(db, proc, media_ids)
@@ -92,6 +103,7 @@ def run_analysis(db: Session, procedure_id: str) -> dict:
         tracker.update(fd.t_s, fd.detections)
         detection_timeline.append({"t_s": fd.t_s, "classes": classes})
 
+    progress(0.6, "Tracking instruments")
     # --- tracks + analytics ---
     track_metrics = tracker.metrics()
     for m in track_metrics:
@@ -124,6 +136,7 @@ def run_analysis(db: Session, procedure_id: str) -> dict:
             "t_start_s": p.t_start_s, "t_end_s": p.t_end_s, "confidence": p.confidence,
         })
 
+    progress(0.75, "Scoring skill & risk")
     # --- skill ---
     skill = compute_skill(track_metrics, phases_dicts, va.duration_s, va.camera_motion)
     db.add(models.SkillReport(
@@ -168,6 +181,7 @@ def run_analysis(db: Session, procedure_id: str) -> dict:
             payload=a.payload,
         ))
 
+    progress(0.9, "Building digital twin")
     # --- digital twin ---
     twin_data = twin.build_twin(proc.id, proc.procedure_type,
                                 proc.patient.history if proc.patient else {})
@@ -189,6 +203,7 @@ def run_analysis(db: Session, procedure_id: str) -> dict:
 
     proc.status = "analyzed"
     db.commit()
+    progress(1.0, "Complete")
 
     return {
         "procedure_id": proc.id,
