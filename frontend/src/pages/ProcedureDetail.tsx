@@ -8,6 +8,7 @@ import SkillScorecard from "../components/SkillScorecard";
 import RiskPanel from "../components/RiskPanel";
 import CopilotFeed from "../components/CopilotFeed";
 import DigitalTwin from "../components/DigitalTwin";
+import ErrorBoundary from "../components/ErrorBoundary";
 import type { DigitalTwinT, ProcedureDetail as PD, SimilarCase, UnifiedAnalysis } from "../types";
 
 export default function ProcedureDetail() {
@@ -145,7 +146,9 @@ export default function ProcedureDetail() {
           {twin && (
             <div className="panel">
               <h3>Digital Twin <span className="tag">3D anatomy · expected vs actual</span></h3>
-              <DigitalTwin structures={twin.structures} />
+              <ErrorBoundary fallback={<div className="muted small">3D viewer unavailable.</div>}>
+                <DigitalTwin structures={twin.structures} />
+              </ErrorBoundary>
               <div className="legend">
                 <span><span className="dot" style={{ background: "var(--safe)" }} />Safe</span>
                 <span><span className="dot" style={{ background: "var(--caution)" }} />Caution</span>

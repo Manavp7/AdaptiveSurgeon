@@ -1,12 +1,29 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { TwinStructure } from "../types";
 
+function webglAvailable(): boolean {
+  try {
+    const c = document.createElement("canvas");
+    return !!(
+      window.WebGLRenderingContext &&
+      (c.getContext("webgl") || c.getContext("experimental-webgl"))
+    );
+  } catch {
+    return false;
+  }
+}
+
 export default function DigitalTwin({ structures }: { structures: TwinStructure[] }) {
   const mountRef = useRef<HTMLDivElement>(null);
+  const [failed, setFailed] = useState(false);
 
   useEffect(() => {
+    if (!webglAvailable()) {
+      setFailed(true);
+      return;
+    }
     const mount = mountRef.current;
     if (!mount) return;
 
@@ -19,7 +36,13 @@ export default function DigitalTwin({ structures }: { structures: TwinStructure[
     const camera = new THREE.PerspectiveCamera(50, width / height, 0.1, 100);
     camera.position.set(2.2, 1.4, 3.2);
 
-    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    let renderer: THREE.WebGLRenderer;
+    try {
+      renderer = new THREE.WebGLRenderer({ antialias: true });
+    } catch {
+      setFailed(true);
+      return;
+    }
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mount.appendChild(renderer.domElement);
@@ -75,6 +98,23 @@ export default function DigitalTwin({ structures }: { structures: TwinStructure[
     };
   }, [structures]);
 
+  if (failed) {
+    return (
+      <div className="twin-canvas" style={{ display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }}>
+        <div>
+          <div className="muted small" style={{ marginBottom: 8 }}>
+            3D rendering unavailable (no WebGL). Anatomy structures:
+          </div>
+          {structures.map((s) => (
+            <div key={s.name} className="small" style={{ marginBottom: 3 }}>
+              <span className="dot" style={{ background: s.color }} />
+              {s.name.replace(/_/g, " ")} — <span className={`sev-${s.criticality === "critical" ? "critical" : s.criticality === "caution" ? "medium" : "low"}`}>{s.criticality}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
   return <div ref={mountRef} className="twin-canvas" />;
 }
 
