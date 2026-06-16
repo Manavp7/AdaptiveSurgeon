@@ -42,7 +42,10 @@ def create_patient(
     db: Annotated[Session, Depends(get_db)],
     _: Annotated[User, Depends(require_role("surgeon"))],
 ) -> Patient:
+    from ..security_deid import pseudonymize
+
     patient = Patient(**payload.model_dump())
+    patient.mrn_hash = pseudonymize(patient.external_mrn)
     db.add(patient)
     db.commit()
     db.refresh(patient)

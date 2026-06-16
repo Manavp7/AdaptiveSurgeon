@@ -19,16 +19,21 @@ class PatientCreate(BaseModel):
     sex: str | None = None
     bmi: float | None = None
     history: dict = Field(default_factory=dict)
+    consent_obtained: bool = False
+    consent_reference: str = ""
 
 
 class PatientOut(ORMModel):
     id: str
     external_mrn: str
+    mrn_hash: str
     display_name: str
     age: int | None
     sex: str | None
     bmi: float | None
     history: dict
+    consent_obtained: bool
+    consent_reference: str
     created_at: datetime
 
 

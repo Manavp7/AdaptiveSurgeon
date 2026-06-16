@@ -40,6 +40,45 @@ def _startup() -> None:
     init_db()
 
 
+_AUDIT_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+@app.middleware("http")
+async def audit_middleware(request, call_next):
+    """Record mutating API calls to the audit log (best-effort, never blocks)."""
+    response = await call_next(request)
+    try:
+        path = request.url.path
+        if request.method in _AUDIT_METHODS and path.startswith(settings.api_prefix):
+            # Skip auth endpoints (login/refresh) to avoid noise.
+            if not path.startswith(f"{settings.api_prefix}/auth"):
+                from .db import SessionLocal
+                from .models import AuditLog
+                from .security import decode_token
+
+                user_id = username = role = None
+                auth = request.headers.get("authorization", "")
+                if auth.lower().startswith("bearer "):
+                    payload = decode_token(auth[7:])
+                    if payload:
+                        user_id = payload.get("sub")
+                        username = payload.get("username")
+                        role = payload.get("role")
+                db = SessionLocal()
+                try:
+                    db.add(AuditLog(
+                        user_id=user_id, username=username or "anonymous",
+                        role=role or "", method=request.method, path=path,
+                        status_code=response.status_code,
+                    ))
+                    db.commit()
+                finally:
+                    db.close()
+    except Exception:  # noqa: BLE001 - auditing must never break requests
+        pass
+    return response
+
+
 @app.get("/health", tags=["system"])
 def health() -> dict:
     return {
@@ -62,6 +101,7 @@ def _register_routers() -> None:
     """Include API routers. Imported lazily so partial builds still boot."""
     from .routers import (
         analysis,
+        audit,
         auth,
         foundation,
         jobs,
@@ -80,6 +120,7 @@ def _register_routers() -> None:
     app.include_router(jobs.router, prefix=p)
     app.include_router(twin.router, prefix=p)
     app.include_router(foundation.router, prefix=p)
+    app.include_router(audit.router, prefix=p)
 
 
 _register_routers()

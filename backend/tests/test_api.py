@@ -82,6 +82,33 @@ def test_reanalysis_is_idempotent(client, surgeon_token):
     assert r1["phases"] == 6
 
 
+def test_phi_deid_on_patient_create(client, surgeon_token):
+    h = {"Authorization": f"Bearer {surgeon_token}"}
+    r = client.post(
+        "/api/patients",
+        json={"external_mrn": "MRN-DEID-1", "display_name": "De-id Test",
+              "consent_obtained": True, "consent_reference": "C-1"},
+        headers=h,
+    )
+    assert r.status_code == 201
+    body = r.json()
+    assert body["mrn_hash"].startswith("anon_")  # pseudonymized
+    assert body["consent_obtained"] is True
+
+
+def test_audit_log_records_writes_admin_only(client, surgeon_token):
+    # generate an auditable write
+    h = {"Authorization": f"Bearer {surgeon_token}"}
+    client.post("/api/patients", json={"external_mrn": "MRN-AUD", "display_name": "Aud"}, headers=h)
+    # surgeon cannot read audit
+    assert client.get("/api/audit", headers=h).status_code == 403
+    # admin can
+    at = client.post("/api/auth/login", data={"username": "admin", "password": "admin123"}).json()["access_token"]
+    page = client.get("/api/audit", headers={"Authorization": f"Bearer {at}"}).json()
+    assert page["total"] >= 1
+    assert any(e["path"].endswith("/patients") and e["method"] == "POST" for e in page["items"])
+
+
 def test_token_refresh(client, surgeon_token):
     h = {"Authorization": f"Bearer {surgeon_token}"}
     r = client.post("/api/auth/refresh", headers=h)

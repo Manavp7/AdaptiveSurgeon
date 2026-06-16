@@ -8,11 +8,13 @@ from .analysis import (
     SkillReport,
     Track,
 )
+from .audit import AuditLog
 from .clinical import Event, Media, Outcome, Patient, Procedure
 from .twin import DigitalTwin
 from .user import User
 
 __all__ = [
+    "AuditLog",
     "Patient",
     "Procedure",
     "Media",

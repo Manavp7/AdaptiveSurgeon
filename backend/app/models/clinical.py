@@ -22,11 +22,16 @@ class Patient(IdMixin, TimestampMixin, Base):
 
     # external_mrn is intended to be a hashed/de-identified reference.
     external_mrn: Mapped[str] = mapped_column(String(64), index=True)
+    # Pseudonymized token of the MRN (PHI de-id pathway).
+    mrn_hash: Mapped[str] = mapped_column(String(32), default="", index=True)
     display_name: Mapped[str] = mapped_column(String(120), default="")
     age: Mapped[int | None] = mapped_column(Integer, nullable=True)
     sex: Mapped[str | None] = mapped_column(String(16), nullable=True)
     bmi: Mapped[float | None] = mapped_column(Float, nullable=True)
     history: Mapped[dict] = mapped_column(JSON, default=dict)
+    # Consent tracking (prerequisite for any real-data use).
+    consent_obtained: Mapped[bool] = mapped_column(Boolean, default=False)
+    consent_reference: Mapped[str] = mapped_column(String(120), default="")
 
     procedures: Mapped[list["Procedure"]] = relationship(
         back_populates="patient", cascade="all, delete-orphan"

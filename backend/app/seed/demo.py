@@ -91,9 +91,13 @@ def seed_cases(db: Session, run_analysis: bool = True) -> list[str]:
             log.info("Case %s already seeded; skipping.", spec["mrn"])
             continue
 
+        from ..security_deid import pseudonymize
+
         patient = models.Patient(
-            external_mrn=spec["mrn"], display_name=spec["name"], age=spec["age"],
+            external_mrn=spec["mrn"], mrn_hash=pseudonymize(spec["mrn"]),
+            display_name=spec["name"], age=spec["age"],
             sex=spec["sex"], bmi=spec["bmi"], history=spec["history"],
+            consent_obtained=True, consent_reference=f"CONSENT-{spec['mrn']}",
         )
         db.add(patient)
         db.flush()
