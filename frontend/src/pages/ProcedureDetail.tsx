@@ -9,7 +9,15 @@ import RiskPanel from "../components/RiskPanel";
 import CopilotFeed from "../components/CopilotFeed";
 import DigitalTwin from "../components/DigitalTwin";
 import ErrorBoundary from "../components/ErrorBoundary";
-import type { DigitalTwinT, ProcedureDetail as PD, SimilarCase, UnifiedAnalysis } from "../types";
+import VitalsPanel from "../components/VitalsPanel";
+import TrackAnalytics from "../components/TrackAnalytics";
+import type {
+  DigitalTwinT,
+  ProcedureDetail as PD,
+  SimilarCase,
+  UnifiedAnalysis,
+  VitalsResponse,
+} from "../types";
 
 export default function ProcedureDetail() {
   const { id } = useParams<{ id: string }>();
@@ -20,6 +28,7 @@ export default function ProcedureDetail() {
   const [proc, setProc] = useState<PD | null>(null);
   const [analysis, setAnalysis] = useState<UnifiedAnalysis | null>(null);
   const [twin, setTwin] = useState<DigitalTwinT | null>(null);
+  const [vitals, setVitals] = useState<VitalsResponse | null>(null);
   const [similar, setSimilar] = useState<SimilarCase[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [showTracks, setShowTracks] = useState(true);
@@ -36,9 +45,10 @@ export default function ProcedureDetail() {
     setAnalysis(a);
     try {
       setTwin(await api.getTwin(id));
+      setVitals(await api.getVitals(id));
       setSimilar((await api.similar(id, 5)).results);
     } catch {
-      /* twin/similar optional */
+      /* twin/vitals/similar optional */
     }
   }, [id]);
 
@@ -153,6 +163,18 @@ export default function ProcedureDetail() {
               currentTime={currentTime}
               onSeek={seek}
             />
+          </div>
+
+          {vitals && vitals.series.length > 0 && (
+            <div className="panel">
+              <h3>Vital Signs <span className="tag">{vitals.source} · synced to playhead</span></h3>
+              <VitalsPanel series={vitals.series} currentTime={currentTime} />
+            </div>
+          )}
+
+          <div className="panel">
+            <h3>Instrument Analytics <span className="tag">per-instrument motion</span></h3>
+            <TrackAnalytics tracks={analysis.tracks} />
           </div>
 
           {twin && (

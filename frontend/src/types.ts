@@ -179,6 +179,20 @@ export interface SimilarCase {
   outcome_summary: string;
 }
 
+export interface VitalPoint {
+  t: number;
+  hr: number;
+  bp_sys: number;
+  bp_dia: number;
+  spo2: number;
+}
+
+export interface VitalsResponse {
+  procedure_id: string;
+  source: string | null;
+  series: VitalPoint[];
+}
+
 export interface AskResponse {
   question: string;
   answer: string;

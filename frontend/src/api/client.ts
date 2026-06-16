@@ -7,6 +7,7 @@ import type {
   ProcedureDetail,
   SimilarCase,
   UnifiedAnalysis,
+  VitalsResponse,
 } from "../types";
 
 const TOKEN_KEY = "adaptive_token";
@@ -119,6 +120,7 @@ export const api = {
     }
   },
   getAnalysis: (id: string) => req<UnifiedAnalysis>(`/procedures/${id}/analysis`),
+  getVitals: (id: string) => req<VitalsResponse>(`/procedures/${id}/vitals`),
   getTwin: (id: string) => req<DigitalTwinT>(`/procedures/${id}/twin`),
 
   // foundation
