@@ -74,7 +74,15 @@ foundation/case-search — all connected through one pipeline.
 - **Trainable ML models (M4)**: scikit-learn risk + phase models (`make train`),
   selected via `ADAPTIVE_RISK_PROVIDER=model` / `ADAPTIVE_PHASE_PROVIDER=model`,
   with automatic fallback to rules/heuristics
-- **DICOM-lite CT slice viewer** in the digital twin
+- **Real medical imaging (M3):** loads **real DICOM** studies (CT in Hounsfield
+  units + a real MR volume, bundled offline via pydicom) into a **PACS-grade
+  viewer** — window/level presets, axial/coronal/sagittal **MPR**, zoom, **HU
+  readout**, **mm distance measurement**, and a DICOM metadata panel
+- **Surgical planning & simulation (M3):** plan an instrument approach on the 3D
+  twin; computes clearance to each critical structure, a safety score, and
+  warnings; animates the trajectory. **Honest boundary:** this is planning/
+  simulation and a **simulation-only, non-autonomous** teleoperation preview —
+  the system does **not** perform surgery or drive any robot.
 - **Minimal RBAC** + **token refresh**, **audit log**, **consent + PHI de-id**
 - **Pagination**; **provider capability reporting** (`/api/providers`)
 - **S3/MinIO storage adapter** (optional) and **Dockerfiles + compose** (deploy-only)

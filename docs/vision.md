@@ -34,9 +34,12 @@ Real-Time Guidance — *Copilot for Surgeons*.
 9. **Foundation Model** — "GPT for surgery": learn from a million surgeries to
    answer "show similar cases", "what complications occurred", "best dissection
    path".
-10. **Autonomous Assistance** *(far future, roadmap only)* — smart camera, smart
-    navigation, robotic integration (e.g. Intuitive, Medtronic). Helping, never
-    replacing, surgeons.
+10. **Planning, Simulation & Assisted Teleoperation** *(research)* — pre-op
+    approach planning, trajectory safety simulation, and a clearly-labeled
+    **simulation-only, non-autonomous** teleoperation preview. Smart camera /
+    navigation / robotic integration (e.g. Intuitive, Medtronic) remain far-future
+    roadmap. **This system does not, and is not intended to, perform surgery
+    autonomously.** It helps, never replaces, the surgeon.
 
 ## What this repository implements
 

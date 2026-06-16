@@ -21,6 +21,16 @@ fallback**; **DICOM-lite CT slice viewer**; minimal RBAC + token refresh; audit
 log; consent + PHI de-id; pagination; provider capability reporting; S3/MinIO
 adapter; Dockerfiles + compose. All offline-first with synthetic fallbacks.
 
+## M3 — Real Medical Imaging + Surgical Planning ✅ (this repository)
+
+Replaced synthetic imaging with **real DICOM** (CT in Hounsfield units + real MR
+volume, bundled offline via pydicom) and a **PACS-grade viewer** (window/level
+presets, axial/coronal/sagittal MPR, zoom, HU readout, mm measurement, metadata).
+Added **surgical approach planning & simulation** (trajectory clearance to
+critical structures, safety score, warnings, animated probe) plus an honest
+**simulation-only, non-autonomous** teleoperation preview. The system explicitly
+does not perform surgery.
+
 ## M2 — Real Video Intelligence
 
 Integrate a trained surgical instrument detector (YOLO/RT-DETR) via the existing

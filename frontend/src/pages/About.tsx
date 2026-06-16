@@ -6,9 +6,9 @@ const SUBSYSTEMS = [
   ["5 · Skill Engine", "Motion economy, precision, tremor, camera, workflow → score.", "live"],
   ["6 · Surgical Copilot", "Advisory-only, context-aware guidance.", "live"],
   ["7 · Risk Prediction", "Per-phase event probabilities from motion features.", "live"],
-  ["8 · Digital Twin", "3D anatomy + expected-vs-actual comparison.", "live"],
+  ["8 · Digital Twin + Real Imaging", "Real DICOM PACS viewer (HU/MPR) + 3D twin.", "live"],
   ["9 · Foundation Model", "Case embeddings + similarity search + grounded Q&A.", "live"],
-  ["10 · Autonomous Assistance", "Smart camera / navigation / robotics.", "roadmap"],
+  ["10 · Planning & Simulation", "Approach planning + trajectory safety; sim-only teleop (non-autonomous).", "live"],
 ];
 
 import { useEffect, useState } from "react";

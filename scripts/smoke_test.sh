@@ -58,6 +58,21 @@ checks["twin"] = len(twin["structures"]) > 0
 sim = get(f"/foundation/similar?procedure_id={pid}")
 checks["similar_cases"] = len(sim["results"]) > 0
 
+# real DICOM imaging
+imaging = get(f"/procedures/{pid}/imaging")
+checks["real_dicom_imaging"] = len(imaging["studies"]) > 0
+if imaging["studies"]:
+    vol = get(f"/imaging/{imaging['studies'][0]['id']}/volume")
+    checks["dicom_volume"] = bool(vol.get("data_b64"))
+
+# surgical planning
+import json as _json, urllib.request as _u
+req = _u.Request(base + f"/procedures/{pid}/plan", method="POST",
+                 data=_json.dumps({"entry": [0, 2.2, 1.6], "target": [0.5, -0.1, 0.2]}).encode(),
+                 headers={"Content-Type": "application/json"})
+plan = _json.load(_u.urlopen(req))
+checks["surgical_planning"] = "safety_score" in plan
+
 print("Unified workflow checks:")
 for k, v in checks.items():
     print(f"  [{'OK' if v else 'FAIL'}] {k}")
