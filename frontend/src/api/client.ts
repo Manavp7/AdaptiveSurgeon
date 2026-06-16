@@ -6,6 +6,8 @@ import type {
   Page,
   Patient,
   Procedure,
+  DicomVolume,
+  ImagingStudy,
   ProcedureDetail,
   SimilarCase,
   SurgeonScorecard,
@@ -135,6 +137,11 @@ export const api = {
     req<{ depth: number; height: number; width: number; modality: string; data_b64: string }>(
       `/procedures/${id}/twin/volume`
     ),
+
+  // real medical imaging (DICOM)
+  listImaging: (id: string) =>
+    req<{ studies: ImagingStudy[] }>(`/procedures/${id}/imaging`),
+  imagingVolume: (mediaId: string) => req<DicomVolume>(`/imaging/${mediaId}/volume`),
   updateOutcome: (id: string, body: Record<string, unknown>) =>
     req<OutcomeT>(`/procedures/${id}/outcome`, { method: "PUT", body: JSON.stringify(body) }),
 

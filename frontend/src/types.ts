@@ -179,6 +179,33 @@ export interface SimilarCase {
   outcome_summary: string;
 }
 
+export interface ImagingStudy {
+  id: string;
+  kind: string;
+  modality: string;
+  depth: number;
+  rows: number | null;
+  cols: number | null;
+  description: string;
+  filename: string;
+}
+
+export interface DicomVolume {
+  modality: string;
+  depth: number;
+  rows: number;
+  cols: number;
+  pixel_spacing: [number, number] | number[];
+  slice_thickness: number;
+  is_hu: boolean;
+  value_min: number;
+  value_max: number;
+  default_window: [number, number] | number[];
+  window_presets: Record<string, (number | null)[]>;
+  dtype: string;
+  data_b64: string;
+}
+
 export interface VitalPoint {
   t: number;
   hr: number;

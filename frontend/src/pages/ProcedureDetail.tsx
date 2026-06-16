@@ -13,10 +13,11 @@ import VitalsPanel from "../components/VitalsPanel";
 import TrackAnalytics from "../components/TrackAnalytics";
 import OutcomeEditor from "../components/OutcomeEditor";
 import AnnotationsPanel from "../components/AnnotationsPanel";
-import CTSliceViewer from "../components/CTSliceViewer";
+import DicomViewer from "../components/DicomViewer";
 import type {
   DigitalTwinT,
   ProcedureDetail as PD,
+  ImagingStudy,
   SimilarCase,
   UnifiedAnalysis,
   VitalsResponse,
@@ -35,6 +36,7 @@ export default function ProcedureDetail() {
   const [analysis, setAnalysis] = useState<UnifiedAnalysis | null>(null);
   const [twin, setTwin] = useState<DigitalTwinT | null>(null);
   const [vitals, setVitals] = useState<VitalsResponse | null>(null);
+  const [imaging, setImaging] = useState<ImagingStudy[]>([]);
   const [similar, setSimilar] = useState<SimilarCase[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [showTracks, setShowTracks] = useState(true);
@@ -52,6 +54,7 @@ export default function ProcedureDetail() {
     try {
       setTwin(await api.getTwin(id));
       setVitals(await api.getVitals(id));
+      setImaging((await api.listImaging(id)).studies);
       setSimilar((await api.similar(id, 5)).results);
     } catch {
       /* twin/vitals/similar optional */
@@ -202,6 +205,13 @@ export default function ProcedureDetail() {
             <TrackAnalytics tracks={analysis.tracks} />
           </div>
 
+          {imaging.length > 0 && (
+            <div className="panel">
+              <h3>Medical Imaging <span className="tag">real DICOM · PACS viewer</span></h3>
+              <DicomViewer studies={imaging} />
+            </div>
+          )}
+
           {twin && (
             <div className="panel">
               <h3>Digital Twin <span className="tag">3D anatomy · expected vs actual</span></h3>
@@ -214,10 +224,6 @@ export default function ProcedureDetail() {
                 <span><span className="dot" style={{ background: "var(--safe)" }} />Safe</span>
                 <span><span className="dot" style={{ background: "var(--caution)" }} />Caution</span>
                 <span><span className="dot" style={{ background: "var(--critical)" }} />Critical</span>
-              </div>
-              <div style={{ marginTop: 12 }}>
-                <div className="muted small" style={{ marginBottom: 6 }}>Pre-op CT (axial slices)</div>
-                <CTSliceViewer procedureId={proc.id} />
               </div>
               <div style={{ marginTop: 10 }}>
                 <div className="muted small" style={{ marginBottom: 6 }}>Expected vs actual</div>
