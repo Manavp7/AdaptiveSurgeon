@@ -99,6 +99,13 @@ def test_live_or_websocket(client):
         assert types[-1] == "done"
 
 
+def test_providers_status(client):
+    p = client.get("/api/providers").json()
+    assert set(p) == {"instrument", "anatomy", "phase", "risk", "copilot", "embedding"}
+    assert p["instrument"]["default"] == "synthetic"
+    assert "real_available" in p["embedding"]
+
+
 def test_surgeon_scorecards(client):
     r = client.get("/api/analytics/surgeons").json()
     assert "surgeons" in r and len(r["surgeons"]) >= 1

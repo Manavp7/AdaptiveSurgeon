@@ -147,6 +147,10 @@ export const api = {
   // analytics
   surgeonScorecards: () =>
     req<{ surgeons: SurgeonScorecard[] }>("/analytics/surgeons"),
+  providers: () =>
+    req<Record<string, { configured: string; default: string; real_backend: string; real_available: boolean }>>(
+      "/providers"
+    ),
 
   // foundation
   similar: (id: string, topK = 6) =>

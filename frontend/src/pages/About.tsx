@@ -11,16 +11,20 @@ const SUBSYSTEMS = [
   ["10 · Autonomous Assistance", "Smart camera / navigation / robotics.", "roadmap"],
 ];
 
-const PROVIDERS = [
-  "InstrumentDetectionProvider (synthetic → YOLO)",
-  "AnatomySegmentationProvider (synthetic → SAM)",
-  "ProcedurePhaseProvider (heuristic → temporal model)",
-  "RiskAssessmentProvider (rules → trained model)",
-  "CopilotProvider (rules → LLM)",
-  "EmbeddingProvider (hashing → sentence-transformer)",
-];
+import { useEffect, useState } from "react";
+import { api } from "../api/client";
+
+type ProviderStatus = Record<
+  string,
+  { configured: string; default: string; real_backend: string; real_available: boolean }
+>;
 
 export default function About() {
+  const [providers, setProviders] = useState<ProviderStatus>({});
+  useEffect(() => {
+    api.providers().then(setProviders).catch(() => {});
+  }, []);
+
   return (
     <div>
       <h1 className="page-title">Architecture</h1>
@@ -53,14 +57,34 @@ export default function About() {
           </table>
         </div>
         <div className="panel">
-          <h3>Swappable provider interfaces</h3>
+          <h3>Swappable provider interfaces <span className="tag">live capability check</span></h3>
           <p className="muted small">
             Synthetic/heuristic defaults run fully offline. Real models drop in via config with no
             architectural change.
           </p>
-          {PROVIDERS.map((p) => (
-            <div key={p} className="feed-item small">{p}</div>
-          ))}
+          <table>
+            <thead>
+              <tr><th>Provider</th><th>Active</th><th>Real backend</th></tr>
+            </thead>
+            <tbody>
+              {Object.entries(providers).map(([name, p]) => (
+                <tr key={name}>
+                  <td>{name}</td>
+                  <td>
+                    <span className={`badge ${p.configured === p.default ? "registered" : "analyzed"}`}>
+                      {p.configured}
+                    </span>
+                  </td>
+                  <td className="small">
+                    {p.real_backend}{" "}
+                    <span className={p.real_available ? "sev-low" : "muted"}>
+                      ({p.real_available ? "available" : "not installed"})
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

@@ -110,6 +110,7 @@ def _register_routers() -> None:
         media,
         patients,
         procedures,
+        system,
         twin,
     )
 
@@ -125,6 +126,7 @@ def _register_routers() -> None:
     app.include_router(audit.router, prefix=p)
     app.include_router(analytics.router, prefix=p)
     app.include_router(live.router, prefix=p)
+    app.include_router(system.router, prefix=p)
 
 
 _register_routers()
