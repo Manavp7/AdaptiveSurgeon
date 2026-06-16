@@ -15,6 +15,7 @@ from sqlalchemy.orm import Session
 from ..config import get_settings
 from ..db import get_db
 from ..models import (
+    AnatomyMask,
     Detection,
     Event,
     Media,
@@ -28,6 +29,7 @@ from ..models import (
 from ..schemas.analysis import (
     AdvisoryOut,
     AnalysisStatus,
+    AnatomyMaskOut,
     DetectionOut,
     PhaseSegmentOut,
     RiskAssessmentOut,
@@ -124,6 +126,7 @@ def unified_analysis(procedure_id: str, db: Annotated[Session, Depends(get_db)])
             .all()
         )
 
+    anatomy = db.query(AnatomyMask).filter_by(procedure_id=procedure_id).all()
     skill = db.query(SkillReport).filter_by(procedure_id=procedure_id).first()
     risks = (
         db.query(RiskAssessment)
@@ -147,6 +150,7 @@ def unified_analysis(procedure_id: str, db: Annotated[Session, Depends(get_db)])
         width=video.width if video else None,
         height=video.height if video else None,
         phases=[PhaseSegmentOut.model_validate(p) for p in phases],
+        anatomy=[AnatomyMaskOut.model_validate(a) for a in anatomy],
         tracks=[TrackOut.model_validate(t) for t in tracks],
         detection_count=detection_count,
         detections_sample=[DetectionOut.model_validate(d) for d in detections],

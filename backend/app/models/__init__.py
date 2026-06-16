@@ -1,6 +1,7 @@
 """ORM models. Importing this package registers all tables on Base.metadata."""
 
 from .analysis import (
+    AnatomyMask,
     CaseEmbedding,
     Detection,
     PhaseSegment,
@@ -22,6 +23,7 @@ __all__ = [
     "Outcome",
     "Detection",
     "Track",
+    "AnatomyMask",
     "PhaseSegment",
     "SkillReport",
     "RiskAssessment",

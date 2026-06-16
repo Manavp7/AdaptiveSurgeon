@@ -20,7 +20,10 @@ from sqlalchemy.orm import Session
 
 from .. import models
 from ..config import get_settings
+import numpy as np
+
 from ..providers import (
+    get_anatomy_provider,
     get_copilot_provider,
     get_instrument_provider,
     get_phase_provider,
@@ -40,6 +43,7 @@ def _clear_prior_analysis(db: Session, proc: models.Procedure, media_ids: list[s
         db.execute(delete(models.Detection).where(models.Detection.media_id.in_(media_ids)))
         db.execute(delete(models.Track).where(models.Track.media_id.in_(media_ids)))
     db.execute(delete(models.PhaseSegment).where(models.PhaseSegment.procedure_id == proc.id))
+    db.execute(delete(models.AnatomyMask).where(models.AnatomyMask.procedure_id == proc.id))
     db.execute(delete(models.RiskAssessment).where(models.RiskAssessment.procedure_id == proc.id))
     db.execute(delete(models.SkillReport).where(models.SkillReport.procedure_id == proc.id))
     db.execute(delete(models.DigitalTwin).where(models.DigitalTwin.procedure_id == proc.id))
@@ -102,6 +106,18 @@ def run_analysis(
             n_detections += 1
         tracker.update(fd.t_s, fd.detections)
         detection_timeline.append({"t_s": fd.t_s, "classes": classes})
+
+    # --- anatomy segmentation (Subsystem 3) ---
+    anatomy_provider = get_anatomy_provider()
+    rep_frame = va.representative_frame
+    if rep_frame is None:
+        rep_frame = np.zeros((max(va.height, 1), max(va.width, 1), 3), dtype=np.uint8)
+    rep_t = va.duration_s / 2.0
+    for mask in anatomy_provider.segment(rep_frame, rep_t):
+        db.add(models.AnatomyMask(
+            procedure_id=proc.id, t_s=round(rep_t, 2), class_name=mask.class_name,
+            criticality=mask.criticality, confidence=mask.confidence, polygon=mask.polygon,
+        ))
 
     progress(0.6, "Tracking instruments")
     # --- tracks + analytics ---

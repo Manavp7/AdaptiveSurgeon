@@ -97,6 +97,14 @@ export interface Track {
   points: number[][];
 }
 
+export interface AnatomyMask {
+  t_s: number;
+  class_name: string;
+  criticality: "safe" | "caution" | "critical";
+  confidence: number;
+  polygon: number[][];
+}
+
 export interface PhaseSegment {
   phase: string;
   order_idx: number;
@@ -137,6 +145,7 @@ export interface UnifiedAnalysis {
   width: number | null;
   height: number | null;
   phases: PhaseSegment[];
+  anatomy: AnatomyMask[];
   tracks: Track[];
   detection_count: number;
   detections_sample: Detection[];

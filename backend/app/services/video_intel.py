@@ -32,6 +32,7 @@ class VideoAnalysis:
     duration_s: float
     frames: list[FrameDetections]
     camera_motion: float  # mean global motion across sampled frames [0,1]
+    representative_frame: np.ndarray | None = None  # mid-procedure frame (BGR)
 
 
 def analyze_video(
@@ -52,6 +53,8 @@ def analyze_video(
     frames: list[FrameDetections] = []
     motions: list[float] = []
     prev_small: np.ndarray | None = None
+    mid_frame_idx = (total // 2) if total else 0
+    representative: np.ndarray | None = None
 
     idx = 0
     while True:
@@ -67,8 +70,12 @@ def analyze_video(
             if prev_small is not None:
                 motions.append(float(np.mean(np.abs(small.astype(np.int16) - prev_small.astype(np.int16))) / 255.0))
             prev_small = small
+        if representative is None and idx >= mid_frame_idx:
+            representative = frame.copy()
         idx += 1
     cap.release()
+    if representative is None and frames:
+        representative = None  # no frame captured (empty video)
 
     duration_s = (total / src_fps) if total else (frames[-1].t_s if frames else 0.0)
     camera_motion = float(np.mean(motions)) if motions else 0.0
@@ -79,4 +86,5 @@ def analyze_video(
         duration_s=round(duration_s, 3),
         frames=frames,
         camera_motion=round(camera_motion, 5),
+        representative_frame=representative,
     )

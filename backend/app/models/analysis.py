@@ -52,6 +52,22 @@ class Track(IdMixin, Base):
     points: Mapped[list] = mapped_column(JSON, default=list)
 
 
+class AnatomyMask(IdMixin, Base):
+    """Anatomical structure segmentation for overlay (Subsystem 3)."""
+
+    __tablename__ = "anatomy_masks"
+
+    procedure_id: Mapped[str] = mapped_column(
+        ForeignKey("procedures.id", ondelete="CASCADE"), index=True
+    )
+    t_s: Mapped[float] = mapped_column(Float, default=0.0)
+    class_name: Mapped[str] = mapped_column(String(40), index=True)
+    criticality: Mapped[str] = mapped_column(String(16), default="safe")  # safe|caution|critical
+    confidence: Mapped[float] = mapped_column(Float, default=0.5)
+    # normalized polygon [[x,y], ...]
+    polygon: Mapped[list] = mapped_column(JSON, default=list)
+
+
 class PhaseSegment(IdMixin, Base):
     """Procedure phase timeline segment (Subsystem 4)."""
 

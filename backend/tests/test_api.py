@@ -54,6 +54,7 @@ def test_unified_analysis_connects_all_subsystems(client):
     assert a["skill"]["score"] > 0         # skill
     assert len(a["risks"]) > 0             # risk
     assert len(a["advisories"]) > 0        # copilot
+    assert len(a["anatomy"]) > 0           # anatomy segmentation overlay
 
 
 def test_twin_and_foundation(client):

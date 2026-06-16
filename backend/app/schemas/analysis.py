@@ -32,6 +32,14 @@ class TrackOut(ORMModel):
     points: list
 
 
+class AnatomyMaskOut(ORMModel):
+    t_s: float
+    class_name: str
+    criticality: str
+    confidence: float
+    polygon: list
+
+
 class PhaseSegmentOut(ORMModel):
     phase: str
     order_idx: int
@@ -80,6 +88,7 @@ class UnifiedAnalysis(BaseModel):
     width: int | None = None
     height: int | None = None
     phases: list[PhaseSegmentOut] = []
+    anatomy: list[AnatomyMaskOut] = []
     tracks: list[TrackOut] = []
     detection_count: int = 0
     detections_sample: list[DetectionOut] = []

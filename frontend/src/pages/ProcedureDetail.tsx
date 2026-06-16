@@ -23,6 +23,7 @@ export default function ProcedureDetail() {
   const [similar, setSimilar] = useState<SimilarCase[]>([]);
   const [currentTime, setCurrentTime] = useState(0);
   const [showTracks, setShowTracks] = useState(true);
+  const [showAnatomy, setShowAnatomy] = useState(true);
   const [busy, setBusy] = useState(false);
   const [progress, setProgress] = useState("");
   const [err, setErr] = useState("");
@@ -113,21 +114,30 @@ export default function ProcedureDetail() {
                   videoRef={videoRef}
                   onTime={setCurrentTime}
                   showTracks={showTracks}
+                  showAnatomy={showAnatomy}
                 />
-                <div className="flex" style={{ marginTop: 8, justifyContent: "space-between" }}>
-                  <label className="small flex">
-                    <input
-                      type="checkbox"
-                      checked={showTracks}
-                      style={{ width: "auto" }}
-                      onChange={(e) => setShowTracks(e.target.checked)}
-                    />
-                    Show instrument tracks
-                  </label>
+                <div className="flex" style={{ marginTop: 8, justifyContent: "space-between", flexWrap: "wrap" }}>
+                  <div className="flex" style={{ gap: 16 }}>
+                    <label className="small flex">
+                      <input type="checkbox" checked={showTracks} style={{ width: "auto" }}
+                        onChange={(e) => setShowTracks(e.target.checked)} />
+                      Tracks
+                    </label>
+                    <label className="small flex">
+                      <input type="checkbox" checked={showAnatomy} style={{ width: "auto" }}
+                        onChange={(e) => setShowAnatomy(e.target.checked)} />
+                      Anatomy
+                    </label>
+                  </div>
                   <span className="muted small">
                     {analysis.detection_count} detections · {analysis.tracks.length} tracks ·{" "}
-                    t={currentTime.toFixed(1)}s
+                    {analysis.anatomy.length} structures · t={currentTime.toFixed(1)}s
                   </span>
+                </div>
+                <div className="legend">
+                  <span><span className="dot" style={{ background: "var(--safe)" }} />Safe</span>
+                  <span><span className="dot" style={{ background: "var(--caution)" }} />Caution</span>
+                  <span><span className="dot" style={{ background: "var(--critical)" }} />Critical</span>
                 </div>
               </>
             ) : (
