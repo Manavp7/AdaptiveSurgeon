@@ -11,6 +11,7 @@ import DigitalTwin from "../components/DigitalTwin";
 import ErrorBoundary from "../components/ErrorBoundary";
 import VitalsPanel from "../components/VitalsPanel";
 import TrackAnalytics from "../components/TrackAnalytics";
+import OutcomeEditor from "../components/OutcomeEditor";
 import type {
   DigitalTwinT,
   ProcedureDetail as PD,
@@ -214,6 +215,16 @@ export default function ProcedureDetail() {
             <h3>Surgical Copilot <span className="tag">advisory only</span></h3>
             <CopilotFeed advisories={analysis.advisories} currentTime={currentTime} onSeek={seek} />
           </div>
+          <div className="panel">
+            <h3>Outcome <span className="tag">data platform</span></h3>
+            <OutcomeEditor
+              procedureId={proc.id}
+              outcome={proc.outcome}
+              canEdit={canWrite(role)}
+              onSaved={load}
+            />
+          </div>
+
           {similar.length > 0 && (
             <div className="panel">
               <h3>Similar Cases <span className="tag">foundation model</span></h3>

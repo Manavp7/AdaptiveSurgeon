@@ -1,6 +1,8 @@
 import type {
   AskResponse,
   DigitalTwinT,
+  EventT,
+  OutcomeT,
   Page,
   Patient,
   Procedure,
@@ -122,6 +124,18 @@ export const api = {
   getAnalysis: (id: string) => req<UnifiedAnalysis>(`/procedures/${id}/analysis`),
   getVitals: (id: string) => req<VitalsResponse>(`/procedures/${id}/vitals`),
   getTwin: (id: string) => req<DigitalTwinT>(`/procedures/${id}/twin`),
+  updateOutcome: (id: string, body: Record<string, unknown>) =>
+    req<OutcomeT>(`/procedures/${id}/outcome`, { method: "PUT", body: JSON.stringify(body) }),
+
+  // annotations
+  listAnnotations: (id: string) => req<EventT[]>(`/procedures/${id}/events?kind=annotation`),
+  addAnnotation: (id: string, label: string, t_start_s: number) =>
+    req<EventT>(`/procedures/${id}/events`, {
+      method: "POST",
+      body: JSON.stringify({ kind: "annotation", label, t_start_s, severity: "info" }),
+    }),
+  deleteAnnotation: (id: string, eventId: string) =>
+    req<void>(`/procedures/${id}/events/${eventId}`, { method: "DELETE" }),
 
   // foundation
   similar: (id: string, topK = 6) =>

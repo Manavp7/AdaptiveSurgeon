@@ -129,6 +129,16 @@ def upsert_outcome(
     for k, v in payload.model_dump().items():
         setattr(outcome, k, v)
     db.add(outcome)
+    db.flush()
+    # Keep the foundation/case-search embedding consistent with the new outcome.
+    from ..services import foundation
+    from ..models import PhaseSegment
+
+    proc.__dict__["_phase_labels"] = [
+        p.phase for p in db.query(PhaseSegment).filter_by(procedure_id=procedure_id)
+        .order_by(PhaseSegment.order_idx).all()
+    ]
+    foundation.upsert_case_embedding(db, proc)
     db.commit()
     db.refresh(outcome)
     return outcome
