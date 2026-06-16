@@ -59,10 +59,18 @@ def get_anatomy_provider() -> AnatomySegmentationProvider:
 
 
 def get_phase_provider() -> ProcedurePhaseProvider:
+    if settings.phase_provider == "model":
+        from .phase import ModelPhases
+
+        return _try(ModelPhases, HeuristicPhases, "phase_model")
     return HeuristicPhases()
 
 
 def get_risk_provider() -> RiskAssessmentProvider:
+    if settings.risk_provider == "model":
+        from .risk import ModelRisk
+
+        return _try(ModelRisk, RuleRisk, "risk_model")
     return RuleRisk()
 
 

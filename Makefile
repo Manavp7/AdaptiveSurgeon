@@ -15,6 +15,9 @@ backend:
 frontend:
 	cd frontend && npm run dev -- --host
 
+train:
+	. .venv/bin/activate && cd backend && python -m app.ml.train_risk && python -m app.ml.train_phase
+
 test:
 	. .venv/bin/activate && cd backend && pytest -q
 
