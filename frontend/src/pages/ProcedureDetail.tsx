@@ -7,7 +7,6 @@ import PhaseTimeline from "../components/PhaseTimeline";
 import SkillScorecard from "../components/SkillScorecard";
 import RiskPanel from "../components/RiskPanel";
 import CopilotFeed from "../components/CopilotFeed";
-import ErrorBoundary from "../components/ErrorBoundary";
 import { SkeletonPanels } from "../components/Skeleton";
 import VitalsPanel from "../components/VitalsPanel";
 import TrackAnalytics from "../components/TrackAnalytics";
@@ -23,8 +22,8 @@ import type {
   VitalsResponse,
 } from "../types";
 
-// Code-split the Three.js viewer into its own chunk (loaded on demand).
-const DigitalTwin = lazy(() => import("../components/DigitalTwin"));
+// Code-split the Three.js planning/twin viewer into its own chunk.
+const SurgicalPlanning = lazy(() => import("../components/SurgicalPlanning"));
 
 export default function ProcedureDetail() {
   const { id } = useParams<{ id: string }>();
@@ -214,17 +213,10 @@ export default function ProcedureDetail() {
 
           {twin && (
             <div className="panel">
-              <h3>Digital Twin <span className="tag">3D anatomy · expected vs actual</span></h3>
-              <ErrorBoundary fallback={<div className="muted small">3D viewer unavailable.</div>}>
-                <Suspense fallback={<div className="twin-canvas" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><span className="muted small">Loading 3D viewer…</span></div>}>
-                  <DigitalTwin structures={twin.structures} />
-                </Suspense>
-              </ErrorBoundary>
-              <div className="legend">
-                <span><span className="dot" style={{ background: "var(--safe)" }} />Safe</span>
-                <span><span className="dot" style={{ background: "var(--caution)" }} />Caution</span>
-                <span><span className="dot" style={{ background: "var(--critical)" }} />Critical</span>
-              </div>
+              <h3>Surgical Planning &amp; Simulation <span className="tag">3D twin · trajectory safety</span></h3>
+              <Suspense fallback={<div className="twin-canvas" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><span className="muted small">Loading 3D viewer…</span></div>}>
+                <SurgicalPlanning procedureId={proc.id} twin={twin} />
+              </Suspense>
               <div style={{ marginTop: 10 }}>
                 <div className="muted small" style={{ marginBottom: 6 }}>Expected vs actual</div>
                 {twin.expected_vs_actual.map((d, i) => (

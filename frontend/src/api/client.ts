@@ -8,6 +8,7 @@ import type {
   Procedure,
   DicomVolume,
   ImagingStudy,
+  PlanResult,
   ProcedureDetail,
   SimilarCase,
   SurgeonScorecard,
@@ -142,6 +143,13 @@ export const api = {
   listImaging: (id: string) =>
     req<{ studies: ImagingStudy[] }>(`/procedures/${id}/imaging`),
   imagingVolume: (mediaId: string) => req<DicomVolume>(`/imaging/${mediaId}/volume`),
+
+  // surgical planning
+  planApproach: (id: string, entry: number[], target: number[]) =>
+    req<PlanResult>(`/procedures/${id}/plan`, {
+      method: "POST",
+      body: JSON.stringify({ entry, target }),
+    }),
   updateOutcome: (id: string, body: Record<string, unknown>) =>
     req<OutcomeT>(`/procedures/${id}/outcome`, { method: "PUT", body: JSON.stringify(body) }),
 

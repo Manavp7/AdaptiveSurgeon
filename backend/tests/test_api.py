@@ -71,6 +71,25 @@ def test_report_export(client):
     assert "skill_score" in csv_res.text
 
 
+def test_surgical_planning_safe_vs_unsafe(client):
+    pid = client.get("/api/procedures").json()["items"][0]["id"]
+    twin = client.get(f"/api/procedures/{pid}/twin").json()
+    by_name = {s["name"]: s for s in twin["structures"]}
+
+    # Aim straight at the critical common bile duct -> should be flagged unsafe.
+    cbd = by_name["common_bile_duct"]["geometry"]
+    cbd_center = [(cbd["from"][i] + cbd["to"][i]) / 2 for i in range(3)]
+    danger = client.post(f"/api/procedures/{pid}/plan",
+                         json={"entry": cbd_center, "target": cbd_center}).json()
+    assert danger["safe"] is False
+    assert any("DANGER" in w for w in danger["warnings"])
+
+    # A far approach to the gallbladder -> safer, higher score.
+    safe = client.post(f"/api/procedures/{pid}/plan",
+                       json={"entry": [0.0, 2.2, 1.6], "target": [0.5, -0.1, 0.2]}).json()
+    assert safe["safety_score"] >= danger["safety_score"]
+
+
 def test_vitals_generated_and_correlated(client):
     procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]

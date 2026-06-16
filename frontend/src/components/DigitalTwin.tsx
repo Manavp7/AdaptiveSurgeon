@@ -15,7 +15,18 @@ function webglAvailable(): boolean {
   }
 }
 
-export default function DigitalTwin({ structures }: { structures: TwinStructure[] }) {
+export interface PlanOverlay {
+  trajectory: number[][];
+  safe: boolean;
+}
+
+export default function DigitalTwin({
+  structures,
+  plan,
+}: {
+  structures: TwinStructure[];
+  plan?: PlanOverlay | null;
+}) {
   const mountRef = useRef<HTMLDivElement>(null);
   const [failed, setFailed] = useState(false);
 
@@ -72,9 +83,45 @@ export default function DigitalTwin({ structures }: { structures: TwinStructure[
     grid.position.y = -1.6;
     scene.add(grid);
 
+    // --- surgical plan overlay (trajectory + markers + animated probe) ---
+    let probe: THREE.Mesh | null = null;
+    let pathPts: THREE.Vector3[] = [];
+    if (plan && plan.trajectory.length > 1) {
+      pathPts = plan.trajectory.map((p) => new THREE.Vector3(p[0], p[1], p[2]));
+      const lineColor = plan.safe ? 0x21d4a8 : 0xe0455e;
+      const lineGeom = new THREE.BufferGeometry().setFromPoints(pathPts);
+      const line = new THREE.Line(lineGeom, new THREE.LineBasicMaterial({ color: lineColor, linewidth: 2 }));
+      scene.add(line);
+      // entry (blue) + target (yellow) markers
+      const entry = pathPts[0];
+      const target = pathPts[pathPts.length - 1];
+      const mk = (pos: THREE.Vector3, color: number) => {
+        const m = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 12), new THREE.MeshBasicMaterial({ color }));
+        m.position.copy(pos);
+        scene.add(m);
+      };
+      mk(entry, 0x4f8cff);
+      mk(target, 0xe0a800);
+      probe = new THREE.Mesh(
+        new THREE.SphereGeometry(0.06, 16, 12),
+        new THREE.MeshStandardMaterial({ color: lineColor, emissive: new THREE.Color(lineColor).multiplyScalar(0.4) })
+      );
+      scene.add(probe);
+    }
+
     let raf = 0;
+    const clock = new THREE.Clock();
     const animate = () => {
       controls.update();
+      if (probe && pathPts.length > 1) {
+        const t = (clock.getElapsedTime() * 0.25) % 1;
+        const f = t * (pathPts.length - 1);
+        const i = Math.floor(f);
+        const frac = f - i;
+        const a = pathPts[i];
+        const b = pathPts[Math.min(i + 1, pathPts.length - 1)];
+        probe.position.lerpVectors(a, b, frac);
+      }
       renderer.render(scene, camera);
       raf = requestAnimationFrame(animate);
     };
@@ -96,7 +143,7 @@ export default function DigitalTwin({ structures }: { structures: TwinStructure[
       renderer.dispose();
       mount.removeChild(renderer.domElement);
     };
-  }, [structures]);
+  }, [structures, plan]);
 
   if (failed) {
     return (

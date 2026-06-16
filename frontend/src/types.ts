@@ -161,6 +161,25 @@ export interface TwinStructure {
   geometry: Record<string, unknown>;
 }
 
+export interface PlanClearance {
+  structure: string;
+  criticality: string;
+  clearance: number;
+  breach: boolean;
+}
+
+export interface PlanResult {
+  entry: number[];
+  target: number[];
+  trajectory: number[][];
+  clearances: PlanClearance[];
+  min_critical_clearance: number;
+  safety_score: number;
+  safe: boolean;
+  warnings: string[];
+  disclaimer: string;
+}
+
 export interface DigitalTwinT {
   id: string;
   procedure_id: string;

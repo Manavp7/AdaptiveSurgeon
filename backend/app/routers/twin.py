@@ -10,10 +10,38 @@ from sqlalchemy.orm import Session
 from ..db import get_db
 from ..models import DigitalTwin, Procedure
 from ..schemas.twin import DigitalTwinOut
+from pydantic import BaseModel
+
+from ..services import planning as planning_service
 from ..services import twin as twin_service
 from ..services import volume as volume_service
 
 router = APIRouter(prefix="/procedures", tags=["digital-twin"])
+
+
+class PlanRequest(BaseModel):
+    entry: list[float]
+    target: list[float]
+
+
+@router.post("/{procedure_id}/plan")
+def plan_approach(
+    procedure_id: str, payload: PlanRequest, db: Annotated[Session, Depends(get_db)]
+) -> dict:
+    proc = db.get(Procedure, procedure_id)
+    if not proc:
+        raise HTTPException(status_code=404, detail="Procedure not found")
+    twin = db.query(DigitalTwin).filter_by(procedure_id=procedure_id).first()
+    if twin is None:
+        data = twin_service.build_twin(
+            proc.id, proc.procedure_type, proc.patient.history if proc.patient else {}
+        )
+        structures = data["structures"]
+    else:
+        structures = twin.structures
+    if len(payload.entry) != 3 or len(payload.target) != 3:
+        raise HTTPException(status_code=400, detail="entry/target must be 3D points")
+    return planning_service.plan_trajectory(structures, payload.entry, payload.target)
 
 
 @router.get("/{procedure_id}/twin/volume")
