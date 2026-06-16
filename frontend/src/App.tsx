@@ -8,6 +8,7 @@ import CaseSearch from "./pages/CaseSearch";
 import About from "./pages/About";
 import AdminUsers from "./pages/AdminUsers";
 import Leaderboard from "./pages/Leaderboard";
+import Compare from "./pages/Compare";
 
 function Sidebar() {
   const { username, role, logout } = useAuth();
@@ -29,6 +30,9 @@ function Sidebar() {
         </NavLink>
         <NavLink to="/leaderboard" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
           ♛ Scorecards
+        </NavLink>
+        <NavLink to="/compare" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+          ⇄ Compare
         </NavLink>
         <NavLink to="/about" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
           ⓘ Architecture
@@ -71,6 +75,7 @@ export default function App() {
           <Route path="/new" element={<NewCase />} />
           <Route path="/search" element={<CaseSearch />} />
           <Route path="/leaderboard" element={<Leaderboard />} />
+          <Route path="/compare" element={<Compare />} />
           <Route path="/about" element={<About />} />
           <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="*" element={<Navigate to="/" />} />
