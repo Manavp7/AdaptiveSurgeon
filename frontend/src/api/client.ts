@@ -8,6 +8,7 @@ import type {
   Procedure,
   ProcedureDetail,
   SimilarCase,
+  SurgeonScorecard,
   UnifiedAnalysis,
   VitalsResponse,
 } from "../types";
@@ -142,6 +143,10 @@ export const api = {
     }),
   deleteAnnotation: (id: string, eventId: string) =>
     req<void>(`/procedures/${id}/events/${eventId}`, { method: "DELETE" }),
+
+  // analytics
+  surgeonScorecards: () =>
+    req<{ surgeons: SurgeonScorecard[] }>("/analytics/surgeons"),
 
   // foundation
   similar: (id: string, topK = 6) =>

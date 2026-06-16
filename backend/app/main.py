@@ -101,6 +101,7 @@ def _register_routers() -> None:
     """Include API routers. Imported lazily so partial builds still boot."""
     from .routers import (
         analysis,
+        analytics,
         audit,
         auth,
         foundation,
@@ -121,6 +122,7 @@ def _register_routers() -> None:
     app.include_router(twin.router, prefix=p)
     app.include_router(foundation.router, prefix=p)
     app.include_router(audit.router, prefix=p)
+    app.include_router(analytics.router, prefix=p)
 
 
 _register_routers()

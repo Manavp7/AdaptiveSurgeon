@@ -82,6 +82,13 @@ def test_vitals_generated_and_correlated(client):
     assert all(80 <= p["spo2"] <= 100 for p in v["series"])
 
 
+def test_surgeon_scorecards(client):
+    r = client.get("/api/analytics/surgeons").json()
+    assert "surgeons" in r and len(r["surgeons"]) >= 1
+    s = r["surgeons"][0]
+    assert {"surgeon", "cases", "avg_skill", "complication_rate"} <= set(s)
+
+
 def test_twin_and_foundation(client):
     procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]

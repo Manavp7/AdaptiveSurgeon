@@ -193,6 +193,16 @@ export interface VitalsResponse {
   series: VitalPoint[];
 }
 
+export interface SurgeonScorecard {
+  surgeon: string;
+  cases: number;
+  analyzed: number;
+  avg_skill: number | null;
+  complication_rate: number;
+  procedure_types: string[];
+  trend: { procedure_id: string; score: number; created_at: string | null }[];
+}
+
 export interface AskResponse {
   question: string;
   answer: string;
