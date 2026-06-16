@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { api } from "../api/client";
+import { SkeletonCards } from "../components/Skeleton";
 import type { Patient, Procedure } from "../types";
 
 interface Row extends Procedure {
@@ -130,7 +131,7 @@ export default function Dashboard() {
       </div>
 
       {loading ? (
-        <div className="spinner">Loading procedures…</div>
+        <SkeletonCards />
       ) : (
         <div className="cards">
           {filtered.map((r) => (

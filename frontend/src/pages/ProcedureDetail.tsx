@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { api, ApiError } from "../api/client";
 import { canWrite, useAuth } from "../auth";
@@ -7,8 +7,8 @@ import PhaseTimeline from "../components/PhaseTimeline";
 import SkillScorecard from "../components/SkillScorecard";
 import RiskPanel from "../components/RiskPanel";
 import CopilotFeed from "../components/CopilotFeed";
-import DigitalTwin from "../components/DigitalTwin";
 import ErrorBoundary from "../components/ErrorBoundary";
+import { SkeletonPanels } from "../components/Skeleton";
 import VitalsPanel from "../components/VitalsPanel";
 import TrackAnalytics from "../components/TrackAnalytics";
 import OutcomeEditor from "../components/OutcomeEditor";
@@ -19,6 +19,9 @@ import type {
   UnifiedAnalysis,
   VitalsResponse,
 } from "../types";
+
+// Code-split the Three.js viewer into its own chunk (loaded on demand).
+const DigitalTwin = lazy(() => import("../components/DigitalTwin"));
 
 export default function ProcedureDetail() {
   const { id } = useParams<{ id: string }>();
@@ -80,7 +83,13 @@ export default function ProcedureDetail() {
   };
 
   if (err) return <div className="err">{err}</div>;
-  if (!proc || !analysis) return <div className="spinner">Loading case…</div>;
+  if (!proc || !analysis)
+    return (
+      <div className="grid" style={{ gridTemplateColumns: "1.55fr 1fr" }}>
+        <SkeletonPanels count={3} />
+        <SkeletonPanels count={4} />
+      </div>
+    );
 
   const video = proc.media.find((m) => m.kind === "video");
   const hasAnalysis = analysis.phases.length > 0;
@@ -194,7 +203,9 @@ export default function ProcedureDetail() {
             <div className="panel">
               <h3>Digital Twin <span className="tag">3D anatomy · expected vs actual</span></h3>
               <ErrorBoundary fallback={<div className="muted small">3D viewer unavailable.</div>}>
-                <DigitalTwin structures={twin.structures} />
+                <Suspense fallback={<div className="twin-canvas" style={{ display: "flex", alignItems: "center", justifyContent: "center" }}><span className="muted small">Loading 3D viewer…</span></div>}>
+                  <DigitalTwin structures={twin.structures} />
+                </Suspense>
               </ErrorBoundary>
               <div className="legend">
                 <span><span className="dot" style={{ background: "var(--safe)" }} />Safe</span>
