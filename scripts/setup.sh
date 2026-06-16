@@ -8,15 +8,19 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 cd "$ROOT"
 
 echo "==> [1/4] Python virtual environment"
+# Don't let a venv that the caller already activated interfere with creation.
+unset VIRTUAL_ENV || true
 if [ ! -f ".venv/bin/pip" ]; then
   rm -rf .venv
-  if python3 -m venv .venv 2>/dev/null && [ -f ".venv/bin/pip" ]; then
+  if python3 -m venv .venv >/dev/null 2>&1 && [ -f ".venv/bin/pip" ]; then
     echo "    created venv via 'python3 -m venv'"
   else
     echo "    python3-venv (ensurepip) unavailable; falling back to 'virtualenv'"
     rm -rf .venv
-    pip3 install --user --quiet virtualenv
-    VENV_BIN="$(python3 -c 'import site,os;print(os.path.join(site.USER_BASE,"bin","virtualenv"))')"
+    if ! command -v virtualenv >/dev/null 2>&1 && [ ! -x "$HOME/.local/bin/virtualenv" ]; then
+      pip3 install --quiet virtualenv || python3 -m pip install --quiet --user virtualenv
+    fi
+    VENV_BIN="$(command -v virtualenv || echo "$HOME/.local/bin/virtualenv")"
     "$VENV_BIN" .venv
   fi
 fi

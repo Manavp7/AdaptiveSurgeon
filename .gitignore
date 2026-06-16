@@ -7,12 +7,11 @@ __pycache__/
 .pytest_cache/
 .mypy_cache/
 
-# Env / local data
+# Env / local data (anchored so they don't match source dirs like app/storage)
 .env
 *.db
 *.sqlite3
-backend/data/
-storage/
+/backend/data/
 *.log
 
 # Node / frontend
