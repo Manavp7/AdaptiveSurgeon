@@ -48,6 +48,14 @@ def refresh(user: Annotated[User, Depends(get_current_user)]) -> Token:
     return Token(access_token=create_token(user), role=user.role, username=user.username)
 
 
+@router.get("/users", response_model=list[UserOut])
+def list_users(
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_role("admin"))],
+) -> list[User]:
+    return db.query(User).order_by(User.created_at).all()
+
+
 @router.post("/users", response_model=UserOut, status_code=201)
 def create_user(
     payload: UserCreate,

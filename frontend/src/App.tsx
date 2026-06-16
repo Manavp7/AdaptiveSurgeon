@@ -6,6 +6,7 @@ import ProcedureDetail from "./pages/ProcedureDetail";
 import NewCase from "./pages/NewCase";
 import CaseSearch from "./pages/CaseSearch";
 import About from "./pages/About";
+import AdminUsers from "./pages/AdminUsers";
 
 function Sidebar() {
   const { username, role, logout } = useAuth();
@@ -28,6 +29,11 @@ function Sidebar() {
         <NavLink to="/about" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
           ⓘ Architecture
         </NavLink>
+        {role === "admin" && (
+          <NavLink to="/admin/users" className={({ isActive }) => `nav-link ${isActive ? "active" : ""}`}>
+            ⚙ Users
+          </NavLink>
+        )}
       </nav>
       <div className="spacer" />
       <div className="user-box">
@@ -61,6 +67,7 @@ export default function App() {
           <Route path="/new" element={<NewCase />} />
           <Route path="/search" element={<CaseSearch />} />
           <Route path="/about" element={<About />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
           <Route path="*" element={<Navigate to="/" />} />
         </Routes>
       </main>

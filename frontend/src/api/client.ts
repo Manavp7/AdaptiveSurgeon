@@ -84,6 +84,12 @@ export const api = {
     return res.json() as Promise<{ access_token: string; role: string; username: string }>;
   },
   me: () => req<{ id: string; username: string; full_name: string; role: string }>("/auth/me"),
+  listUsers: () => req<{ id: string; username: string; full_name: string; role: string }[]>("/auth/users"),
+  createUser: (body: { username: string; password: string; full_name: string; role: string }) =>
+    req<{ id: string; username: string; role: string }>("/auth/users", {
+      method: "POST",
+      body: JSON.stringify(body),
+    }),
 
   // data platform
   listProcedures: (limit = 200, offset = 0) =>
