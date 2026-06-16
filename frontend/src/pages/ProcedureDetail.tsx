@@ -12,6 +12,7 @@ import { SkeletonPanels } from "../components/Skeleton";
 import VitalsPanel from "../components/VitalsPanel";
 import TrackAnalytics from "../components/TrackAnalytics";
 import OutcomeEditor from "../components/OutcomeEditor";
+import AnnotationsPanel from "../components/AnnotationsPanel";
 import type {
   DigitalTwinT,
   ProcedureDetail as PD,
@@ -239,6 +240,16 @@ export default function ProcedureDetail() {
             <h3>Surgical Copilot <span className="tag">advisory only</span></h3>
             <CopilotFeed advisories={analysis.advisories} currentTime={currentTime} onSeek={seek} />
           </div>
+          <div className="panel">
+            <h3>Annotations <span className="tag">time-anchored notes</span></h3>
+            <AnnotationsPanel
+              procedureId={proc.id}
+              currentTime={currentTime}
+              canEdit={canWrite(role)}
+              onSeek={seek}
+            />
+          </div>
+
           <div className="panel">
             <h3>Outcome <span className="tag">data platform</span></h3>
             <OutcomeEditor
