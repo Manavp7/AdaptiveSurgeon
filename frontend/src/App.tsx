@@ -9,6 +9,7 @@ import About from "./pages/About";
 import AdminUsers from "./pages/AdminUsers";
 import Leaderboard from "./pages/Leaderboard";
 import Compare from "./pages/Compare";
+import LiveOR from "./pages/LiveOR";
 
 function Sidebar() {
   const { username, role, logout } = useAuth();
@@ -72,6 +73,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Dashboard />} />
           <Route path="/procedures/:id" element={<ProcedureDetail />} />
+          <Route path="/procedures/:id/live" element={<LiveOR />} />
           <Route path="/new" element={<NewCase />} />
           <Route path="/search" element={<CaseSearch />} />
           <Route path="/leaderboard" element={<Leaderboard />} />

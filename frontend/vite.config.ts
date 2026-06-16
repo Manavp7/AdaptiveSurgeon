@@ -11,6 +11,7 @@ export default defineConfig({
       "/api": {
         target: process.env.ADAPTIVE_BACKEND_URL || "http://localhost:8000",
         changeOrigin: true,
+        ws: true,
       },
     },
   },

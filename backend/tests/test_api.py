@@ -82,6 +82,23 @@ def test_vitals_generated_and_correlated(client):
     assert all(80 <= p["spo2"] <= 100 for p in v["series"])
 
 
+def test_live_or_websocket(client):
+    pid = client.get("/api/procedures").json()["items"][0]["id"]
+    with client.websocket_connect(f"/api/ws/procedures/{pid}/live?speed=20") as ws:
+        meta = ws.receive_json()
+        assert meta["type"] == "meta"
+        assert meta["duration"] > 0
+        # collect until done
+        types = []
+        for _ in range(200):
+            msg = ws.receive_json()
+            types.append(msg["type"])
+            if msg["type"] == "done":
+                break
+        assert "event" in types
+        assert types[-1] == "done"
+
+
 def test_surgeon_scorecards(client):
     r = client.get("/api/analytics/surgeons").json()
     assert "surgeons" in r and len(r["surgeons"]) >= 1

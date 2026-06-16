@@ -110,6 +110,7 @@ export default function ProcedureDetail() {
         <div className="flex">
           {hasAnalysis && (
             <>
+              <button onClick={() => nav(`/procedures/${proc.id}/live`)}>▶ Live OR</button>
               <a href={`/api/procedures/${proc.id}/report`} target="_blank" rel="noreferrer">
                 <button>Export JSON</button>
               </a>

@@ -106,6 +106,7 @@ def _register_routers() -> None:
         auth,
         foundation,
         jobs,
+        live,
         media,
         patients,
         procedures,
@@ -123,6 +124,7 @@ def _register_routers() -> None:
     app.include_router(foundation.router, prefix=p)
     app.include_router(audit.router, prefix=p)
     app.include_router(analytics.router, prefix=p)
+    app.include_router(live.router, prefix=p)
 
 
 _register_routers()
