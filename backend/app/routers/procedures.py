@@ -59,6 +59,34 @@ def create_procedure(
     return proc
 
 
+@router.get("/{procedure_id}/events", response_model=list[EventOut])
+def list_events(
+    procedure_id: str,
+    db: Annotated[Session, Depends(get_db)],
+    kind: str | None = Query(None),
+) -> list[Event]:
+    if not db.get(Procedure, procedure_id):
+        raise HTTPException(status_code=404, detail="Procedure not found")
+    q = db.query(Event).filter(Event.procedure_id == procedure_id)
+    if kind:
+        q = q.filter(Event.kind == kind)
+    return q.order_by(Event.t_start_s).all()
+
+
+@router.delete("/{procedure_id}/events/{event_id}", status_code=204)
+def delete_event(
+    procedure_id: str,
+    event_id: str,
+    db: Annotated[Session, Depends(get_db)],
+    _: Annotated[User, Depends(require_role("surgeon"))],
+) -> None:
+    event = db.get(Event, event_id)
+    if not event or event.procedure_id != procedure_id:
+        raise HTTPException(status_code=404, detail="Event not found")
+    db.delete(event)
+    db.commit()
+
+
 @router.post("/{procedure_id}/events", response_model=EventOut, status_code=201)
 def add_event(
     procedure_id: str,

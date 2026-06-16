@@ -122,6 +122,26 @@ def test_audit_log_records_writes_admin_only(client, surgeon_token):
     assert any(e["path"].endswith("/patients") and e["method"] == "POST" for e in page["items"])
 
 
+def test_annotations_crud(client, surgeon_token):
+    h = {"Authorization": f"Bearer {surgeon_token}"}
+    pid = client.get("/api/procedures").json()["items"][0]["id"]
+    # create annotation
+    r = client.post(
+        f"/api/procedures/{pid}/events",
+        json={"kind": "annotation", "label": "Check CVS here", "t_start_s": 12.0, "severity": "info"},
+        headers=h,
+    )
+    assert r.status_code == 201
+    eid = r.json()["id"]
+    # list filtered by kind
+    anns = client.get(f"/api/procedures/{pid}/events?kind=annotation").json()
+    assert any(e["id"] == eid for e in anns)
+    # delete (surgeon)
+    assert client.delete(f"/api/procedures/{pid}/events/{eid}", headers=h).status_code == 204
+    anns2 = client.get(f"/api/procedures/{pid}/events?kind=annotation").json()
+    assert not any(e["id"] == eid for e in anns2)
+
+
 def test_token_refresh(client, surgeon_token):
     h = {"Authorization": f"Bearer {surgeon_token}"}
     r = client.post("/api/auth/refresh", headers=h)
