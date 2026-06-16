@@ -25,8 +25,16 @@ def test_rbac_enforced(client, viewer_token):
     assert r.status_code == 403
 
 
+def test_pagination(client):
+    page = client.get("/api/procedures?limit=1&offset=0").json()
+    assert set(page) == {"items", "total", "limit", "offset"}
+    assert len(page["items"]) == 1
+    assert page["total"] >= 2
+    assert page["limit"] == 1
+
+
 def test_procedure_linked_graph(client):
-    procs = client.get("/api/procedures").json()
+    procs = client.get("/api/procedures").json()["items"]
     assert len(procs) >= 2
     detail = client.get(f"/api/procedures/{procs[0]['id']}").json()
     assert detail["patient"]["id"] == detail["patient_id"]
@@ -35,7 +43,7 @@ def test_procedure_linked_graph(client):
 
 
 def test_unified_analysis_connects_all_subsystems(client):
-    procs = client.get("/api/procedures").json()
+    procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]
     a = client.get(f"/api/procedures/{pid}/analysis").json()
     assert a["status"] == "analyzed"
@@ -49,7 +57,7 @@ def test_unified_analysis_connects_all_subsystems(client):
 
 
 def test_twin_and_foundation(client):
-    procs = client.get("/api/procedures").json()
+    procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]
     twin = client.get(f"/api/procedures/{pid}/twin").json()
     assert len(twin["structures"]) > 0
@@ -64,7 +72,7 @@ def test_twin_and_foundation(client):
 
 
 def test_reanalysis_is_idempotent(client, surgeon_token):
-    procs = client.get("/api/procedures").json()
+    procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]
     h = {"Authorization": f"Bearer {surgeon_token}"}
     r1 = client.post(f"/api/procedures/{pid}/analyze?wait=true", headers=h).json()
@@ -75,7 +83,7 @@ def test_reanalysis_is_idempotent(client, surgeon_token):
 
 
 def test_analyze_async_job(client, surgeon_token):
-    procs = client.get("/api/procedures").json()
+    procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]
     h = {"Authorization": f"Bearer {surgeon_token}"}
     r = client.post(f"/api/procedures/{pid}/analyze", headers=h).json()

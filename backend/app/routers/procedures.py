@@ -4,11 +4,12 @@ from __future__ import annotations
 
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from ..db import get_db
 from ..models import Event, Outcome, Patient, Procedure, User
+from ..schemas.common import Page
 from ..schemas.clinical import (
     EventCreate,
     EventOut,
@@ -23,9 +24,16 @@ from ..security import require_role
 router = APIRouter(prefix="/procedures", tags=["procedures"])
 
 
-@router.get("", response_model=list[ProcedureOut])
-def list_procedures(db: Annotated[Session, Depends(get_db)]) -> list[Procedure]:
-    return db.query(Procedure).order_by(Procedure.created_at.desc()).all()
+@router.get("", response_model=Page[ProcedureOut])
+def list_procedures(
+    db: Annotated[Session, Depends(get_db)],
+    limit: int = Query(50, ge=1, le=500),
+    offset: int = Query(0, ge=0),
+) -> Page:
+    q = db.query(Procedure).order_by(Procedure.created_at.desc())
+    total = q.count()
+    items = q.offset(offset).limit(limit).all()
+    return Page(items=items, total=total, limit=limit, offset=offset)
 
 
 @router.get("/{procedure_id}", response_model=ProcedureDetailOut)

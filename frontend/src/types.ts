@@ -1,5 +1,12 @@
 export type Role = "admin" | "surgeon" | "viewer";
 
+export interface Page<T> {
+  items: T[];
+  total: number;
+  limit: number;
+  offset: number;
+}
+
 export interface Patient {
   id: string;
   external_mrn: string;

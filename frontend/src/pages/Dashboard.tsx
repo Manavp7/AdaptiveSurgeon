@@ -16,8 +16,9 @@ export default function Dashboard() {
 
   useEffect(() => {
     (async () => {
-      const [procs, patients] = await Promise.all([api.listProcedures(), api.listPatients()]);
-      const pmap = new Map<string, Patient>(patients.map((p) => [p.id, p]));
+      const [procPage, patientPage] = await Promise.all([api.listProcedures(), api.listPatients()]);
+      const procs = procPage.items;
+      const pmap = new Map<string, Patient>(patientPage.items.map((p) => [p.id, p]));
       const withSkill = await Promise.all(
         procs.map(async (p) => {
           let skill: number | null = null;

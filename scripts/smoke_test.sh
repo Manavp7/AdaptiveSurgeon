@@ -39,7 +39,7 @@ def post_form(path, data):
     return json.load(urllib.request.urlopen(urllib.request.Request(base + path, data=body)))
 
 tok = post_form("/auth/login", {"username":"surgeon","password":"surgeon123"})["access_token"]
-procs = get("/procedures")
+procs = get("/procedures")["items"]
 assert procs, "no procedures seeded"
 pid = procs[0]["id"]
 a = get(f"/procedures/{pid}/analysis")

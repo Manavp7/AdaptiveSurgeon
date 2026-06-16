@@ -1,6 +1,7 @@
 import type {
   AskResponse,
   DigitalTwinT,
+  Page,
   Patient,
   Procedure,
   ProcedureDetail,
@@ -61,9 +62,11 @@ export const api = {
   me: () => req<{ id: string; username: string; full_name: string; role: string }>("/auth/me"),
 
   // data platform
-  listProcedures: () => req<Procedure[]>("/procedures"),
+  listProcedures: (limit = 200, offset = 0) =>
+    req<Page<Procedure>>(`/procedures?limit=${limit}&offset=${offset}`),
   getProcedure: (id: string) => req<ProcedureDetail>(`/procedures/${id}`),
-  listPatients: () => req<Patient[]>("/patients"),
+  listPatients: (limit = 500, offset = 0) =>
+    req<Page<Patient>>(`/patients?limit=${limit}&offset=${offset}`),
   createPatient: (body: Partial<Patient>) =>
     req<Patient>("/patients", { method: "POST", body: JSON.stringify(body) }),
   createProcedure: (body: { patient_id: string; procedure_type: string; surgeon_name?: string }) =>
