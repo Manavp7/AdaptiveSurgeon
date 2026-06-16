@@ -11,6 +11,16 @@ machine:
 - Digital Twin viewer (Three.js), Foundation / case search scaffold
 - Unified dashboard, minimal RBAC, single-command setup, tests + smoke test
 
+## M1.5 — Platform expansion ✅ (this repository)
+
+Async analysis jobs + progress; anatomy overlays; intra-op vitals; per-instrument
+& vitals charts; outcome editor; annotations; CSV/JSON export; dashboard
+filters; surgeon scorecards/leaderboard; comparative case view; **Live OR
+WebSocket replay**; **trainable scikit-learn risk/phase models (M4) with
+fallback**; **DICOM-lite CT slice viewer**; minimal RBAC + token refresh; audit
+log; consent + PHI de-id; pagination; provider capability reporting; S3/MinIO
+adapter; Dockerfiles + compose. All offline-first with synthetic fallbacks.
+
 ## M2 — Real Video Intelligence
 
 Integrate a trained surgical instrument detector (YOLO/RT-DETR) via the existing

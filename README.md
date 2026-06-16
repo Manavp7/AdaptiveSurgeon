@@ -54,7 +54,30 @@ Then open **http://localhost:5173** and sign in:
 | viewer  | `viewer`  | `viewer123`  | read-only                  |
 
 Other commands: `make test` (pytest), `make smoke` (end-to-end HTTP check),
-`make build` (frontend production build).
+`make build` (frontend production build), `make train` (train the optional
+scikit-learn risk/phase models).
+
+## Features
+
+**Core workflow (M1):** data platform, video intelligence (detection + tracking),
+procedure timeline, skill engine, risk engine, advisory copilot, digital twin,
+foundation/case-search — all connected through one pipeline.
+
+**Expanded (M2+):**
+- **Async analysis jobs** with live progress (`POST /analyze` → `job_id`, poll `/jobs/{id}`)
+- **Anatomy overlays** on the video (Safe/Caution/Critical segmentation)
+- **Intra-op vitals** (HR/BP/SpO₂) correlated with the risk timeline
+- **Per-instrument analytics** + **vitals charts** (dependency-free SVG)
+- **Outcome editor**, **time-anchored annotations**, **CSV/JSON report export**
+- **Dashboard filtering/search**; **surgeon scorecards & leaderboard**
+- **Comparative case view** (synced side-by-side) and **Live OR** replay (WebSocket)
+- **Trainable ML models (M4)**: scikit-learn risk + phase models (`make train`),
+  selected via `ADAPTIVE_RISK_PROVIDER=model` / `ADAPTIVE_PHASE_PROVIDER=model`,
+  with automatic fallback to rules/heuristics
+- **DICOM-lite CT slice viewer** in the digital twin
+- **Minimal RBAC** + **token refresh**, **audit log**, **consent + PHI de-id**
+- **Pagination**; **provider capability reporting** (`/api/providers`)
+- **S3/MinIO storage adapter** (optional) and **Dockerfiles + compose** (deploy-only)
 
 ## Architecture at a glance
 

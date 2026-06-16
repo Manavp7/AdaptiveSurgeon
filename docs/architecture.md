@@ -96,6 +96,31 @@ offline.
 | CopilotProvider | `RuleCopilot` | LLM |
 | EmbeddingProvider | `HashingTfidfEmbedder` | `SentenceTransformerEmbedder` |
 
+## Selecting real models
+
+Set environment variables to swap providers (each falls back to the offline
+default if the backend/weights are unavailable):
+
+```
+ADAPTIVE_RISK_PROVIDER=model        # scikit-learn risk model (run `make train`)
+ADAPTIVE_PHASE_PROVIDER=model       # scikit-learn phase model
+ADAPTIVE_INSTRUMENT_PROVIDER=yolo   # ultralytics (if installed)
+ADAPTIVE_EMBEDDING_PROVIDER=sentence_transformer
+ADAPTIVE_STORAGE_BACKEND=s3         # S3/MinIO (needs boto3)
+ADAPTIVE_DATABASE_URL=postgresql+psycopg2://...   # Postgres
+```
+
+`GET /api/providers` reports, per provider, the active implementation and whether
+the real backend is importable in the current environment.
+
+## Notable endpoints
+
+- `POST /api/procedures/{id}/analyze` → `{job_id}` (async) or `?wait=true` (sync); `GET /api/jobs/{id}`
+- `GET /api/procedures/{id}/analysis` — unified payload (phases, anatomy, tracks, skill, risks, advisories)
+- `GET /api/procedures/{id}/vitals`, `/twin`, `/twin/volume`, `/report`, `/report.csv`
+- `WS /api/ws/procedures/{id}/live` — Live OR replay
+- `GET /api/analytics/surgeons`, `GET /api/audit` (admin), `GET /api/providers`
+
 ## Ingestion & extensibility
 
 Media is ingested through the object-storage interface and the relational
