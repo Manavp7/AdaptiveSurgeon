@@ -60,7 +60,8 @@ class Settings(BaseSettings):
 
     # --- Video processing ---
     analysis_sample_fps: float = 5.0  # frames/sec sampled during analysis
-    pixels_per_meter: float = 4000.0  # assumed scale for path-length metrics
+    # Assumed scale: laparoscopic field of view ~7 cm wide -> ~9000 px/m.
+    pixels_per_meter: float = 9000.0
 
     # --- CORS ---
     cors_origins: list[str] = ["http://localhost:5173", "http://127.0.0.1:5173"]
