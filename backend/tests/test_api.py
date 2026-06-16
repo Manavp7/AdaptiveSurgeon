@@ -57,6 +57,18 @@ def test_unified_analysis_connects_all_subsystems(client):
     assert len(a["anatomy"]) > 0           # anatomy segmentation overlay
 
 
+def test_vitals_generated_and_correlated(client):
+    procs = client.get("/api/procedures").json()["items"]
+    pid = procs[0]["id"]
+    v = client.get(f"/api/procedures/{pid}/vitals").json()
+    assert v["source"] == "synthetic"
+    assert len(v["series"]) > 0
+    pt = v["series"][0]
+    assert {"t", "hr", "bp_sys", "bp_dia", "spo2"} <= set(pt)
+    # SpO2 stays in a physiological band
+    assert all(80 <= p["spo2"] <= 100 for p in v["series"])
+
+
 def test_twin_and_foundation(client):
     procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]

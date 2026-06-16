@@ -30,7 +30,7 @@ from ..providers import (
     get_risk_provider,
 )
 from ..storage import get_store
-from . import foundation, twin, video_intel
+from . import foundation, twin, video_intel, vitals as vitals_service
 from .skill import compute_skill
 from .tracking import CentroidTracker
 
@@ -196,6 +196,17 @@ def run_analysis(
             t_start_s=a.t_start_s, t_end_s=a.t_end_s, severity=a.severity,
             payload=a.payload,
         ))
+
+    # --- vitals (synthetic, correlated with risk) if none ingested ---
+    existing_vitals = (
+        db.query(models.Vitals).filter_by(procedure_id=proc.id).one_or_none()
+    )
+    if existing_vitals is None or existing_vitals.source == "synthetic":
+        series = vitals_service.generate_vitals(proc.id, va.duration_s, risks_dicts)
+        if existing_vitals is None:
+            db.add(models.Vitals(procedure_id=proc.id, source="synthetic", series=series))
+        else:
+            existing_vitals.series = series
 
     progress(0.9, "Building digital twin")
     # --- digital twin ---

@@ -10,7 +10,7 @@ from .analysis import (
     Track,
 )
 from .audit import AuditLog
-from .clinical import Event, Media, Outcome, Patient, Procedure
+from .clinical import Event, Media, Outcome, Patient, Procedure, Vitals
 from .twin import DigitalTwin
 from .user import User
 
@@ -21,6 +21,7 @@ __all__ = [
     "Media",
     "Event",
     "Outcome",
+    "Vitals",
     "Detection",
     "Track",
     "AnatomyMask",

@@ -8,7 +8,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.orm import Session
 
 from ..db import get_db
-from ..models import Event, Outcome, Patient, Procedure, User
+from ..models import Event, Outcome, Patient, Procedure, User, Vitals
 from ..schemas.common import Page
 from ..schemas.clinical import (
     EventCreate,
@@ -73,6 +73,18 @@ def add_event(
     db.commit()
     db.refresh(event)
     return event
+
+
+@router.get("/{procedure_id}/vitals")
+def get_vitals(procedure_id: str, db: Annotated[Session, Depends(get_db)]) -> dict:
+    if not db.get(Procedure, procedure_id):
+        raise HTTPException(status_code=404, detail="Procedure not found")
+    v = db.query(Vitals).filter_by(procedure_id=procedure_id).first()
+    return {
+        "procedure_id": procedure_id,
+        "source": v.source if v else None,
+        "series": v.series if v else [],
+    }
 
 
 @router.put("/{procedure_id}/outcome", response_model=OutcomeOut)

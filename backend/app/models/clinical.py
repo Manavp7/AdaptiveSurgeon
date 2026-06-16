@@ -103,6 +103,19 @@ class Event(IdMixin, TimestampMixin, Base):
     procedure: Mapped["Procedure"] = relationship(back_populates="events")
 
 
+class Vitals(IdMixin, TimestampMixin, Base):
+    """Intra-op vital signs time-series (Subsystem 1 expansion)."""
+
+    __tablename__ = "vitals"
+
+    procedure_id: Mapped[str] = mapped_column(
+        ForeignKey("procedures.id", ondelete="CASCADE"), index=True, unique=True
+    )
+    source: Mapped[str] = mapped_column(String(16), default="synthetic")  # synthetic|ingested
+    # [{t, hr, bp_sys, bp_dia, spo2}, ...]
+    series: Mapped[list] = mapped_column(JSON, default=list)
+
+
 class Outcome(IdMixin, TimestampMixin, Base):
     __tablename__ = "outcomes"
 
