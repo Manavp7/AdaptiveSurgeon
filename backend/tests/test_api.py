@@ -57,6 +57,19 @@ def test_unified_analysis_connects_all_subsystems(client):
     assert len(a["anatomy"]) > 0           # anatomy segmentation overlay
 
 
+def test_report_export(client):
+    pid = client.get("/api/procedures").json()["items"][0]["id"]
+    rep = client.get(f"/api/procedures/{pid}/report").json()
+    assert rep["skill_score"] is not None
+    assert rep["phases"] and rep["disclaimer"]
+    # de-identified: no raw MRN in report
+    assert "external_mrn" not in rep["patient"]
+    csv_res = client.get(f"/api/procedures/{pid}/report.csv")
+    assert csv_res.status_code == 200
+    assert "text/csv" in csv_res.headers["content-type"]
+    assert "skill_score" in csv_res.text
+
+
 def test_vitals_generated_and_correlated(client):
     procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]

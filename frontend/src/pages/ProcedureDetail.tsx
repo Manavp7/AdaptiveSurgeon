@@ -98,11 +98,23 @@ export default function ProcedureDetail() {
             <span className={`badge ${proc.status}`}>{proc.status}</span>
           </p>
         </div>
-        {canWrite(role) && (
-          <button className="primary" onClick={runAnalysis} disabled={busy}>
-            {busy ? progress || "Processing…" : hasAnalysis ? "Re-run analysis" : "Run analysis"}
-          </button>
-        )}
+        <div className="flex">
+          {hasAnalysis && (
+            <>
+              <a href={`/api/procedures/${proc.id}/report`} target="_blank" rel="noreferrer">
+                <button>Export JSON</button>
+              </a>
+              <a href={`/api/procedures/${proc.id}/report.csv`}>
+                <button>Export CSV</button>
+              </a>
+            </>
+          )}
+          {canWrite(role) && (
+            <button className="primary" onClick={runAnalysis} disabled={busy}>
+              {busy ? progress || "Processing…" : hasAnalysis ? "Re-run analysis" : "Run analysis"}
+            </button>
+          )}
+        </div>
       </div>
 
       {!hasAnalysis && (
