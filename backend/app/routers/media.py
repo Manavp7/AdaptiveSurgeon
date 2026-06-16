@@ -78,6 +78,17 @@ async def upload_media(
         media.duration_s = meta.get("duration_s")
         media.width = meta.get("width")
         media.height = meta.get("height")
+    elif kind in {"ct", "mr", "us"}:
+        # Parse real DICOM metadata on ingestion.
+        try:
+            from ..services import dicom
+
+            dmeta = dicom.read_metadata(store.open_path(uri))
+            media.width = dmeta.get("cols")
+            media.height = dmeta.get("rows")
+            media.meta = {**(media.meta or {}), **dmeta}
+        except Exception:  # noqa: BLE001 - non-DICOM imaging is allowed
+            pass
 
     db.commit()
     db.refresh(media)

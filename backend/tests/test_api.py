@@ -38,7 +38,8 @@ def test_procedure_linked_graph(client):
     assert len(procs) >= 2
     detail = client.get(f"/api/procedures/{procs[0]['id']}").json()
     assert detail["patient"]["id"] == detail["patient_id"]
-    assert len(detail["media"]) == 1
+    # video + imaging studies (CT, MR) are linked
+    assert any(m["kind"] == "video" for m in detail["media"])
     assert detail["outcome"] is not None
 
 

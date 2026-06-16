@@ -72,6 +72,33 @@ _CASES = [
 ]
 
 
+def _attach_dicom_studies(db: Session, store, procedure_id: str) -> None:
+    """Attach real bundled DICOM studies (CT slice + MR volume) to a procedure."""
+    try:
+        from pydicom.data import get_testdata_file
+
+        from ..services import dicom
+    except Exception:  # noqa: BLE001 - pydicom optional
+        return
+
+    studies = [("ct", "CT_small.dcm"), ("mr", "emri_small.dcm")]
+    for kind, fname in studies:
+        try:
+            src = get_testdata_file(fname)
+            if not src:
+                continue
+            uri = store.save_file(f"procedures/{procedure_id}/{kind}.dcm", src)
+            meta = dicom.read_metadata(src)
+            db.add(models.Media(
+                procedure_id=procedure_id, kind=kind, uri=uri, filename=fname,
+                content_type="application/dicom",
+                width=meta.get("cols"), height=meta.get("rows"),
+                meta={**meta, "synthetic": False, "source": "pydicom-testdata"},
+            ))
+        except Exception:  # noqa: BLE001
+            continue
+
+
 def seed_users(db: Session) -> None:
     for username, password, role, full_name in _USERS:
         if db.query(models.User).filter_by(username=username).first():
@@ -127,6 +154,9 @@ def seed_cases(db: Session, run_analysis: bool = True) -> list[str]:
             meta={"synthetic": True, "codec": info["codec"], "skill_seed": spec["skill"]},
         )
         db.add(media)
+
+        # Attach REAL DICOM imaging studies (bundled with pydicom, offline).
+        _attach_dicom_studies(db, store, proc.id)
 
         db.add(models.Outcome(
             procedure_id=proc.id, discharge_summary=spec["discharge"],

@@ -105,6 +105,7 @@ def _register_routers() -> None:
         audit,
         auth,
         foundation,
+        imaging,
         jobs,
         live,
         media,
@@ -127,6 +128,7 @@ def _register_routers() -> None:
     app.include_router(analytics.router, prefix=p)
     app.include_router(live.router, prefix=p)
     app.include_router(system.router, prefix=p)
+    app.include_router(imaging.router, prefix=p)
 
 
 _register_routers()

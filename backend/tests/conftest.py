@@ -63,6 +63,8 @@ def _seed():
                                 width=info["width"], height=info["height"]))
             db.add(models.Outcome(procedure_id=proc.id, discharge_summary="Test case.",
                                   complications=comps))
+            from app.seed.demo import _attach_dicom_studies
+            _attach_dicom_studies(db, store, proc.id)
             db.commit()
             pipeline.run_analysis(db, proc.id)
     finally:
