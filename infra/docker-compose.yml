@@ -1,0 +1,57 @@
+# Future deployment (NOT required to run the prototype, which uses SQLite + local
+# storage via scripts/run_dev.sh). This shows the hospital-server tier:
+# PostgreSQL + the API + the frontend, with an optional MinIO object store.
+#
+#   docker compose -f infra/docker-compose.yml up --build
+#
+services:
+  postgres:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: adaptive
+      POSTGRES_PASSWORD: adaptive
+      POSTGRES_DB: adaptivesurgeon
+    ports: ["5432:5432"]
+    volumes: ["pgdata:/var/lib/postgresql/data"]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U adaptive"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ../backend
+    environment:
+      ADAPTIVE_DATABASE_URL: postgresql+psycopg2://adaptive:adaptive@postgres/adaptivesurgeon
+      # Default deploy uses local storage on a volume. To use MinIO instead,
+      # enable boto3 in requirements.txt and set:
+      #   ADAPTIVE_STORAGE_BACKEND=s3
+      #   ADAPTIVE_S3_ENDPOINT_URL=http://minio:9000
+      #   ADAPTIVE_S3_ACCESS_KEY=adaptive
+      #   ADAPTIVE_S3_SECRET_KEY=adaptivesecret
+      ADAPTIVE_STORAGE_BACKEND: local
+    volumes: ["backenddata:/app/data"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports: ["8000:8000"]
+
+  frontend:
+    build: ../frontend
+    depends_on: [backend]
+    ports: ["5173:5173"]
+
+  # Optional object store (enable by switching backend to storage_backend=s3).
+  minio:
+    image: minio/minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: adaptive
+      MINIO_ROOT_PASSWORD: adaptivesecret
+    ports: ["9000:9000", "9001:9001"]
+    volumes: ["miniodata:/data"]
+
+volumes:
+  pgdata:
+  backenddata:
+  miniodata:

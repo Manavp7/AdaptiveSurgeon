@@ -1,0 +1,132 @@
+"""AdaptiveSurgeon API — application entrypoint.
+
+A coherent Surgical Intelligence OS: one workflow connects the Data Platform,
+Video Intelligence, Procedure Timeline, Skill, Risk, Copilot, Digital Twin and
+Foundation/Case-search subsystems. Advisory-only research prototype.
+"""
+
+from __future__ import annotations
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from . import __version__
+from .config import get_settings
+from .db import init_db
+
+settings = get_settings()
+
+app = FastAPI(
+    title="AdaptiveSurgeon API",
+    version=__version__,
+    description=(
+        "Surgical Intelligence Operating System (research prototype, ADVISORY "
+        "ONLY — not a medical device)."
+    ),
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=settings.cors_origins,
+    allow_origin_regex=r"http://(localhost|127\.0\.0\.1):\d+",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+
+@app.on_event("startup")
+def _startup() -> None:
+    init_db()
+
+
+_AUDIT_METHODS = {"POST", "PUT", "PATCH", "DELETE"}
+
+
+@app.middleware("http")
+async def audit_middleware(request, call_next):
+    """Record mutating API calls to the audit log (best-effort, never blocks)."""
+    response = await call_next(request)
+    try:
+        path = request.url.path
+        if request.method in _AUDIT_METHODS and path.startswith(settings.api_prefix):
+            # Skip auth endpoints (login/refresh) to avoid noise.
+            if not path.startswith(f"{settings.api_prefix}/auth"):
+                from .db import SessionLocal
+                from .models import AuditLog
+                from .security import decode_token
+
+                user_id = username = role = None
+                auth = request.headers.get("authorization", "")
+                if auth.lower().startswith("bearer "):
+                    payload = decode_token(auth[7:])
+                    if payload:
+                        user_id = payload.get("sub")
+                        username = payload.get("username")
+                        role = payload.get("role")
+                db = SessionLocal()
+                try:
+                    db.add(AuditLog(
+                        user_id=user_id, username=username or "anonymous",
+                        role=role or "", method=request.method, path=path,
+                        status_code=response.status_code,
+                    ))
+                    db.commit()
+                finally:
+                    db.close()
+    except Exception:  # noqa: BLE001 - auditing must never break requests
+        pass
+    return response
+
+
+@app.get("/health", tags=["system"])
+def health() -> dict:
+    return {
+        "status": "ok",
+        "app": settings.app_name,
+        "version": __version__,
+        "environment": settings.environment,
+        "providers": {
+            "instrument": settings.instrument_provider,
+            "anatomy": settings.anatomy_provider,
+            "phase": settings.phase_provider,
+            "risk": settings.risk_provider,
+            "copilot": settings.copilot_provider,
+            "embedding": settings.embedding_provider,
+        },
+    }
+
+
+def _register_routers() -> None:
+    """Include API routers. Imported lazily so partial builds still boot."""
+    from .routers import (
+        analysis,
+        analytics,
+        audit,
+        auth,
+        foundation,
+        jobs,
+        live,
+        media,
+        patients,
+        procedures,
+        system,
+        twin,
+    )
+
+    p = settings.api_prefix
+    app.include_router(auth.router, prefix=p)
+    app.include_router(patients.router, prefix=p)
+    app.include_router(procedures.router, prefix=p)
+    app.include_router(media.router, prefix=p)
+    app.include_router(analysis.router, prefix=p)
+    app.include_router(jobs.router, prefix=p)
+    app.include_router(twin.router, prefix=p)
+    app.include_router(foundation.router, prefix=p)
+    app.include_router(audit.router, prefix=p)
+    app.include_router(analytics.router, prefix=p)
+    app.include_router(live.router, prefix=p)
+    app.include_router(system.router, prefix=p)
+
+
+_register_routers()
