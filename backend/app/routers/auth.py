@@ -42,6 +42,12 @@ def me(user: Annotated[User, Depends(get_current_user)]) -> User:
     return user
 
 
+@router.post("/refresh", response_model=Token)
+def refresh(user: Annotated[User, Depends(get_current_user)]) -> Token:
+    """Issue a fresh token for a still-valid (unexpired) token holder."""
+    return Token(access_token=create_token(user), role=user.role, username=user.username)
+
+
 @router.post("/users", response_model=UserOut, status_code=201)
 def create_user(
     payload: UserCreate,

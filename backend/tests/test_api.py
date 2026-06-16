@@ -82,6 +82,17 @@ def test_reanalysis_is_idempotent(client, surgeon_token):
     assert r1["phases"] == 6
 
 
+def test_token_refresh(client, surgeon_token):
+    h = {"Authorization": f"Bearer {surgeon_token}"}
+    r = client.post("/api/auth/refresh", headers=h)
+    assert r.status_code == 200
+    new_tok = r.json()["access_token"]
+    # new token works
+    assert client.get("/api/auth/me", headers={"Authorization": f"Bearer {new_tok}"}).status_code == 200
+    # refresh without auth -> 401
+    assert client.post("/api/auth/refresh").status_code == 401
+
+
 def test_analyze_async_job(client, surgeon_token):
     procs = client.get("/api/procedures").json()["items"]
     pid = procs[0]["id"]

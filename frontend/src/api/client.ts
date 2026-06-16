@@ -19,7 +19,24 @@ export function setToken(t: string | null) {
   else localStorage.removeItem(TOKEN_KEY);
 }
 
-async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
+async function tryRefresh(): Promise<boolean> {
+  const token = getToken();
+  if (!token) return false;
+  try {
+    const res = await fetch("/api/auth/refresh", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    if (!res.ok) return false;
+    const j = (await res.json()) as { access_token: string };
+    setToken(j.access_token);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+async function req<T>(path: string, opts: RequestInit = {}, _retried = false): Promise<T> {
   const headers = new Headers(opts.headers || {});
   const token = getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
@@ -28,6 +45,10 @@ async function req<T>(path: string, opts: RequestInit = {}): Promise<T> {
   }
   const res = await fetch(`/api${path}`, { ...opts, headers });
   if (!res.ok) {
+    // One automatic refresh+retry on 401 (skip the refresh endpoint itself).
+    if (res.status === 401 && !_retried && !path.startsWith("/auth/")) {
+      if (await tryRefresh()) return req<T>(path, opts, true);
+    }
     let detail = res.statusText;
     try {
       const j = await res.json();
