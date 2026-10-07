@@ -95,6 +95,50 @@ class ModelPhases(ProcedurePhaseProvider):
         return results
 
 
+class TransformerPhaseProvider(ProcedurePhaseProvider):
+    """M4 Scaffold: Temporal Video Transformer for phase recognition."""
+
+    name = "transformer"
+
+    def __init__(self):
+        # M4 Scaffold: PyTorch model load would go here
+        # import torch
+        # self.model = torch.load("phase_transformer.pth")
+        self.classes = {i: p for i, p in enumerate(PHASES)}
+
+    def phases(
+        self,
+        procedure_type: str,
+        duration_s: float,
+        track_metrics: list[dict],
+        detection_timeline: list[dict],
+    ) -> list[PhaseResult]:
+
+        # M4 Scaffold: Real inference would process visual embeddings from the video sequence
+        # For now, just generate a dummy timeline
+        results: list[PhaseResult] = []
+        if duration_s <= 0:
+            duration_s = 1.0
+
+        cursor = 0.0
+        for order_idx, phase in enumerate(PHASES):
+            seg = _PHASE_WEIGHTS[phase] * duration_s
+            t0 = cursor
+            t1 = duration_s if order_idx == len(PHASES) - 1 else cursor + seg
+            cursor = t1
+
+            results.append(
+                PhaseResult(
+                    phase=phase,
+                    order_idx=order_idx,
+                    t_start_s=round(t0, 2),
+                    t_end_s=round(t1, 2),
+                    confidence=0.95,  # M4 Mock: Deep learning model has high confidence
+                )
+            )
+        return results
+
+
 class HeuristicPhases(ProcedurePhaseProvider):
     name = "heuristic"
 

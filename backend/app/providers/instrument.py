@@ -90,3 +90,30 @@ class YoloDetector(InstrumentDetectionProvider):
                 )
             )
         return out
+
+
+class OnnxYoloDetector(InstrumentDetectionProvider):
+    """Optional ONNX Runtime YOLO/RT-DETR detector (for M2 Real Video Intelligence)."""
+
+    name = "onnx_yolo"
+
+    def __init__(self, model_path: str = "yolov8_surgical.onnx"):
+        import onnxruntime as ort # noqa: F401 (raises if not installed)
+
+        self.session = ort.InferenceSession(model_path, providers=['CPUExecutionProvider'])
+        self.input_name = self.session.get_inputs()[0].name
+
+        # M2 Scaffold: In a real implementation we would dynamically extract classes
+        self.classes = {0: "grasper", 1: "scissors", 2: "bipolar", 3: "hook"}
+
+    def detect(self, frame: np.ndarray, t_s: float) -> list[DetectionResult]:
+        h, w = frame.shape[:2]
+
+        # M2 Scaffold: Real preprocessing would go here (resize, normalize)
+        dummy_input = np.zeros((1, 3, 640, 640), dtype=np.float32)
+
+        # M2 Scaffold: Mock inference
+        # preds = self.session.run(None, {self.input_name: dummy_input})
+
+        # For this scaffold, we return empty results if called
+        return []

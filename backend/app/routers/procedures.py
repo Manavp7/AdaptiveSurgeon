@@ -115,6 +115,22 @@ def get_vitals(procedure_id: str, db: Annotated[Session, Depends(get_db)]) -> di
     }
 
 
+@router.get("/{procedure_id}/dicom")
+def get_dicom_scaffold(procedure_id: str, db: Annotated[Session, Depends(get_db)]) -> dict:
+    """M5 Scaffold: Returns mock intra-op DICOM volume data for Digital Twin."""
+    if not db.get(Procedure, procedure_id):
+        raise HTTPException(status_code=404, detail="Procedure not found")
+
+    return {
+        "procedure_id": procedure_id,
+        "volume_url": f"/storage/media/{procedure_id}_volume.dcm",
+        "mock_registration": {
+            "transform_matrix": [1,0,0,0, 0,1,0,0, 0,0,1,0, 0,0,0,1],
+            "status": "registered_expected_vs_actual"
+        }
+    }
+
+
 @router.put("/{procedure_id}/outcome", response_model=OutcomeOut)
 def upsert_outcome(
     procedure_id: str,
