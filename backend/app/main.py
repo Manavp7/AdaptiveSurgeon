@@ -112,6 +112,7 @@ def _register_routers() -> None:
         procedures,
         system,
         twin,
+        rag,
     )
 
     p = settings.api_prefix
@@ -127,6 +128,7 @@ def _register_routers() -> None:
     app.include_router(analytics.router, prefix=p)
     app.include_router(live.router, prefix=p)
     app.include_router(system.router, prefix=p)
+    app.include_router(rag.router, prefix=p)
 
 
 _register_routers()

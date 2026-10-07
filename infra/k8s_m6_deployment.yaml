@@ -1,0 +1,49 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adaptivesurgeon-backend-m6
+  labels:
+    app: adaptivesurgeon
+    component: backend
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: adaptivesurgeon
+      component: backend
+  template:
+    metadata:
+      labels:
+        app: adaptivesurgeon
+        component: backend
+    spec:
+      containers:
+      - name: backend
+        image: adaptivesurgeon/backend:m6-latest
+        ports:
+        - containerPort: 8000
+        env:
+        - name: ADAPTIVE_DATABASE_URL
+          value: "postgresql://user:pass@pg-cluster.adaptive.svc.cluster.local:5432/adaptive_m6"
+        - name: STORAGE_BACKEND
+          value: "s3"
+        - name: S3_BUCKET
+          value: "surgical-data-lake-multi-tenant"
+        - name: RAG_VECTOR_DB_URL
+          value: "postgresql://user:pass@pg-vector.adaptive.svc.cluster.local:5432/rag"
+        resources:
+          limits:
+            nvidia.com/gpu: 1  # Mock: Require 1 GPU for real video transformer / YOLO
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: adaptivesurgeon-backend
+spec:
+  selector:
+    app: adaptivesurgeon
+    component: backend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8000
